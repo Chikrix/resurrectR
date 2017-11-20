@@ -1,0 +1,220 @@
+---
+title: "Style Guide"
+author: "Chidi"
+date: "11/19/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Style guide
+
+Hadley Wickham recommends the style guide found [here](http://style.tidyverse.org/). Which was derived from [Google's R style guide](https://google.github.io/styleguide/Rguide.xml), which has been evolving over the years. To apply the style guide presented in the here, use the `lintr` package.
+
+### File names 
+
+File names should be meaningful and end in .R. Examples of good filenames in R includes `fits_model.R`, `utility_functions.R`, `clean_data.R`, `explore.R`, etc. Bad names examples could be `utilityFunctions.R`, `clean data.R`, etc. Avoid using special characters, and instead use letters, numbers, -, _, in filenames. If files has to be followed in some order, prefix the file names with numbers showing their ordering, eg  
+
+- 00_setup_project.R 
+- 01_download  
+- 02_clean_up.R  
+- 03_explore_data.R  
+...
+- 09_visualize.R
+
+Prefer files names with all names lowercase instead of camel case, as some operating systems have case sensitive file systems. Use commented lines of - or = to break up your code sections, eg 
+
+```{r}
+# Load data ===================================================================
+
+# Clean up data ---------------------------------------------------------------
+```
+
+Ensure all calls to load a package - `library(packageName)` are located at the very beginning of the file, and hidden dependencies, an oauth secret key for example are loaded in a startup file like *.Rprofile*, eg, say I want to store an *id* and *password* in *.Rprofile* as environmental variables. Another great alternative would be using *.Renviron*
+
+```{r}
+Sys.setenv(ID = "chidi")
+Sys.setenv(PWD = "chris4919")
+
+# To get the variables above
+id <- Sys.getenv("ID") 
+pwd <- Sys.getenv("PWD")
+```
+
+If I want to do the above, I'll do it in the console and not in the script or markdown file, as the aim is to avoid sharing this with the public :) 
+
+### Syntax
+
+**Variable and function names should only use lowercase letters, numbers and underscores** (to separate words in a variable name). Base R function names and class names use *.* to separate words in a name, to avoid confusion for the S3 object system, which uses this dot pattern in method names, its recommended to not use this dot pattern in our own function and class and variable names. Generally (not just in R), function names shold be verbs and variable names should be verbs. **Put a space before and after all infix operators (+, -, =, <-, etc) **, eg  
+
+`average <- mean(feet / 12 + inches, na.rm = TRUE)`  
+
+However, don't use spaces around `:` `::`, and `:::`. Eg 
+
+`first_twenty <- c(1:20)`  
+`base::get`, etc
+
+**Always place a space before `(`, except for a function**. Eg
+```
+if (debug) {
+  show(x)
+  plot(x, y)
+}
+```
+
+Extra spaces (more than one space in a row) is okay, if it improves the alignment with the equal sign or `<-` character. Eg 
+
+``` r
+list(
+  total = a + b + c,
+  mean  = (a + b + c) / n
+)
+```
+**Whenever you override the default value of a function argument, always provide the arguments full name.** For example 
+
+`mean_age <- mean(ages, na.rm = TRUE)`
+
+**Use curly braces to show code blocks, and indent with two spaces. A `{` should never be on its own exclusive line, but `}` should always be on its own exclusive line, unless its followed by an `else` or `)`.** Eg 
+
+```
+if (y == 0) {
+  if (x > 0) {
+    log(x)
+  } else {
+    message("x is negative or zero")
+  }
+} else {
+  y ^ x
+}
+
+test_that("call1 returns an ordered factor", {
+  expect_s3_class(call1(x, y), c("factor", "ordered"))
+})
+
+```
+
+It's okay to drop the curly braces, if its a simple expression, like a one liner, eg
+
+```
+yes_no <- if ("chidi" == "chidi") "YASS" else "NAA"
+```
+
+**Strive to limit each line in the file to a maximum of 80 characters per line.** If it is too long, break it down. You can control this in *Preferences > Code > Display*, here you'll see the column wrap option and set the number to one you want (80 recommended). If a function call is too long, use one line as for the function argument. 
+
+```
+do_something_very_complicated(
+  "that",
+  requires = many,
+  arguments = "some of which may be long"
+)
+```
+
+- **Use `<-` for assignment, and not `=`**  
+- **Don't use semicolon `;` at the end of a command, or to separate multiple commands in a line**  
+- **Use quotes "" for quoting text, and not ', except when the text contains "" and no single quote**  
+
+### Functions
+
+**Use verbs for function names, where possible**. Example of good and bad function names
+
+```
+# good
+add_row() 
+
+# bad
+row_adder() 
+```
+
+**If a function name runs over multiple lines, indent the second line to where the function definition starts.** For example
+
+```{r}
+# Good
+long_function_name <- function(a = "a long argument",
+                               b = "another argument",
+                               c = "another long argument") {
+  # As usual code is indented by two spaces.
+}
+
+# Bad
+long_function_name <- function(a = "a long argument",
+  b = "another argument",
+  c = "another long argument") {
+  # Difficult to find where definition ends and code begins 
+}
+```
+
+**Only use `return` for early returns, else, rely on R to always return the result of the last evaluated item**. For example  
+
+```{r}
+
+f1 <- function(x) x
+f2 <- function(x) invisible(x)
+
+f1("chidi") # prints "chidi" to console
+f2("chidi") # doesn't print anything to console, but "chidi" is still returned
+
+# Good
+find_abs <- function(x, y){
+  if (x > 0) return(x)
+  x * -1
+}
+
+add_two <- function(x, y) {
+  x + y
+}
+
+# Bad
+add_two <- function(x, y) {
+  return(x + y)
+}
+```
+
+**If you have a function that you want to do something for its side effect, like printing something, saving to disk, or plotting something, etc, it should return the first argument invisibly** using `invisible` function. This makes it possible to use the function as part of a pipe. For example Example
+
+```{r}
+print.url <- function(x, ...) {
+  cat("Url: ", build_url(x), "\n", sep = "")
+  invisible(x)
+}
+```
+
+**Use comments in code to explain *why* and not *what* or *how*. ** We comment in R using ***#*** character.
+
+Generally, keep in mind the following  
+
+- Functions should do one thing that they do well. Should be well tested. A function should be called either because it has side effects, or it returns a value, and not both. Strive to let functions be at most 30 lines, usually functions are between 20 to 30 lines, if its significantly longer, it could be a sign that function should be split into smaller functions.  
+
+- A function shoud be easily understandable in isolation. Avoid global options. If your function uses transcient side effects (like you need to create temporary file, or set an option, etc), you should make sure to clean this up yourself using `on.exit()`. An example here would be incase I set some graphical parameters for plotting image, I can reset to the original state it was with `on.exit()`  
+
+### Pipes  
+
+**Use a pipe `%>%` when you find yourself composing two or more functions into a nested call**, or creating intermediate objects you don't really care about. This makes things easier to read, go to different pipe sections, makes it easier to rearrange them later and harder to overlook a step. Its okay to place one step pipe in a line.  
+
+```
+# Good
+foo_foo %>%
+  hop(through = forest) %>%
+  scoop(up = field_mouse) %>%
+  bop(on = head)
+
+# Bad
+foo_foo <- hop(foo_foo, through = forest)
+foo_foo <- scoop(foo_foo, up = field_mice)
+foo_foo <- bop(foo_foo, on = head)
+```
+
+**Avoid using a pipe when**  
+
+- You want to manipulate more than one object at a time. Pipes are best applied for when we want to perform a sequence of events on an object. 
+- There are meaningful intermediate objects that could be given informative names 
+
+**Others**  
+The piping operator `%>%` should always have a space before it, and a new line after it. Each of this new line should be indented by two spaces. With `magrittr`, we can omit `()` on functions without arguments.
+
+- If the arguments to a function don’t all fit on one line, put each argument on its own line and indent  
+
+### Documentation
+
+Documenting your code is very important, even if you'll be the only one needing your code in future. Use [roxygen2](https://github.com/klutometis/roxygen) with enabled Markdown support, to keep documentation close to code. Read more [here](http://style.tidyverse.org/code-documentation.html)

@@ -3,7 +3,8 @@ title: "About project"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include=TRUE, cache=TRUE, warning=FALSE, echo=FALSE}
+chooseCRANmirror(graphics=FALSE, ind=1)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
@@ -11,21 +12,21 @@ knitr::opts_chunk$set(echo = TRUE)
 
 This project is about me bring back my data science with R skill. I am passionate about data science, and applying the knowledge in both research and production. So my aim would be data science with R and Kotlin. Python is also there as well, but my main focus would be R and Kotlin. So I'll have similar projects for both Kotlin and Python coming.
 
-I'm using this [site](https://dcl-2017-04.github.io/curriculum/upcoming.html) as the curriculum for this.
+I'm using this [curriculum](https://dcl-2017-04.github.io/curriculum/upcoming.html) for this project.
 
 ## Set up
 
-Make sure the following packages are installed
+Make sure the following packages are installed.
 
-```{r include=TRUE}
-install.packages(c("nycflights13", "gapminder", "Lahman", "tidyverse"))
+```{r installs, warning=FALSE, cache=TRUE, dependson='setup', include=TRUE}
+library(dplyr)
+library(nycflights13)
+library(gapminder)
+library(Lahman)
 ```
 
-Tidyverse package comes with many packages by default, which are frequently updated. To run the update for its packages, run 
+To install a package in r, use the command `install.packages("packageName")`. Its not recommended to install packages through a Knitr document which would probably be compiled several times. 
 
-```{r}
-library(tidyverse) # First make sure the package is loaded
-tidyverse_update() # call its update function
-```
+Tidyverse package comes with many packages by default, which are frequently updated. To run the update for its packages, run `tidyverse_update()`
 
 For getting help, you could use a package like **reprex**, which helps to generate reproducible code which can be copied for stackoverflow questions, or github snippets. To make a reproducible question, ensure the packages involved are listed at the top of the script, use `dput` function to help you generate the code to recreate the data, which can be added as a variable in the script for reproducibility, then clean up code so its neat. Read [R-bloggers](https://www.r-bloggers.com/), check out twitter tag - *[#rstats]*, follow prominent twitter R accounts, like **@hadleywickham**, **@statgarrett**, **@rstudiotips**, etc.
