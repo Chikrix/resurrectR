@@ -8,12 +8,6 @@ chooseCRANmirror(graphics=FALSE, ind=1)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Resurrect R
-
-This project is about me bring back my data science with R skill. I am passionate about data science, and applying the knowledge in both research and production. So my aim would be data science with R and Kotlin. Python is also there as well, but my main focus would be R and Kotlin. So I'll have similar projects for both Kotlin and Python coming.
-
-I'm using this [curriculum](https://dcl-2017-04.github.io/curriculum/upcoming.html) for this project.
-
 ## Set up
 
 Make sure the following packages are installed.
