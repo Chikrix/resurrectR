@@ -47,7 +47,7 @@ If I want to do the above, I'll do it in the console and not in the script or ma
 
 ### Syntax
 
-**Variable and function names should only use lowercase letters, numbers and underscores** (to separate words in a variable name). Base R function names and class names use *.* to separate words in a name, to avoid confusion for the S3 object system, which uses this dot pattern in method names, its recommended to not use this dot pattern in our own function and class and variable names. Generally (not just in R), function names shold be verbs and variable names should be verbs. **Put a space before and after all infix operators (+, -, =, <-, etc) **, eg  
+**Variable and function names should only use lowercase letters, numbers and underscores** (to separate words in a variable name). Base R function names and class names use *.* to separate words in a name, to avoid confusion for the S3 object system, which uses this dot pattern in method names, its recommended to not use this dot pattern in our own function and class and variable names. Generally (not just in R), function names shold be verbs and variable names should be verbs. **Put a space before and after all infix operators (+, -, =, <-, etc)**, eg  
 
 `average <- mean(feet / 12 + inches, na.rm = TRUE)`  
 
@@ -156,7 +156,7 @@ f1("chidi") # prints "chidi" to console
 f2("chidi") # doesn't print anything to console, but "chidi" is still returned
 
 # Good
-find_abs <- function(x, y){
+find_abs <- function(x, y) {
   if (x > 0) return(x)
   x * -1
 }
@@ -180,7 +180,7 @@ print.url <- function(x, ...) {
 }
 ```
 
-**Use comments in code to explain *why* and not *what* or *how*. ** We comment in R using ***#*** character.
+**Use comments in code to explain *why* and not *what* or *how*.** We comment in R using **#** character.
 
 Generally, keep in mind the following  
 
