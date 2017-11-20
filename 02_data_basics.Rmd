@@ -1,0 +1,125 @@
+---
+title: "Data Basics"
+author: "Chidi"
+date: "11/20/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Data basics
+
+This section is about understanding data frames, and different data types in R. 
+
+```{r include=FALSE, warning=FALSE, echo=TRUE}
+library(tidyverse)
+library(nycflights13)
+```
+
+Say I want to answer some questions, like, do cars with small engines use less fuel than those with big engines? Or to rephrase in a better way, what is the relation between engine size and fuel efficiency look like? Is it linear? negative? positive? or what?.  
+
+To answer this questions, I'll be using the `mpg` dataset. Note that some packages comes with some data sets. The one I'll be using in this exercise is bundled with `ggplot2` package, which is part of the packages in Tidyverse. Base R also comes with several datasets, you can find them in its `datasets::` package.
+
+A data frame is a rectangle collections of variables (in the column), and observations (in the row). The data frame I'll be using is the `mpg` data set, which is a collection of observations collected by th EPA (US Environment Protection Agency) on 38 car models.
+
+```{r chunk2, include=TRUE, cache=TRUE}
+head(mpg)
+```
+
+The following prints the mpg dataset. The mpg dataset is a tibble, which is like a wrapper around the traditional dataframe, but comes with good display, like showing the data type of each column. Looking at the dataset printed shows this under each column name. For my question, the columns I'm interested in is the `displ` and `hwy` columns. Each row of the `displ` column is tells me the size (volume) of the engine in litres. Which each row under `hwy` column is a cars fuel efficiency in miles per gallon (mpg). A car with low fuel efficiency consumes more fuel than another car with high fuel efficiency when they cover the same distance. Most datasets imported with packages usually have metadata of the dataset with them, I can use `?datasetName` or `packageName::datasetName` to check this. For example, running `?mpg` or `?nycflights13::flights` would show information about the dataset in the *help* pane section on Rstudio.  
+
+### Creating a plot  
+
+I'll create a plot to help me visualise the question I want I asked earlier. 
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy))
+```
+
+From the plot, I see that the higher the `hwy` (fuel efficiency), the lower the engine volume. Meaning that big engines consumens more fuel than smaller. I used ggplot2 to create the mapping. GGplot2 comes with many geom functions for different type of graphing, this geom functions has the mapping argument, which takes an `aes()` function, which defines how we map variables to visual properties for that geom function.  
+
+A template for graphing is 
+
+```
+ggplot(data = <DATA>) + 
+  <GEOM_FUNCTION>(mapping = aes(<MAPPINGS>))
+```
+
+### Exercises
+
+**How many rows are in mpg? How many columns?**  
+
+```{r}
+dim(mpg) # returns number of row and columns
+# or
+nrow(mpg) # number of rows
+ncol(mpg) # number of columns
+```
+
+**Make a scatterplot of `hwy` vs `cyl`**  
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = cyl, y = hwy))
+```
+
+**What happens if you make a scatterplot of class vs drv? Why is the plot not useful?** 
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = drv, y = class))
+```
+
+To answer the question above, looking at plot created, I think its because I'm using the wrong plot for the kind of variables I am looking at. The plot isn't intuitive, because I'm making a scatterplot from two categorical variables, which is not appropriate for a scatterplot. A scatterplot is usually appropriate for visualizing quantitative variables. So this plot wasn't really informative.  
+
+
+
+## Introduction
+
+Visualizing data is important, but in order to do this, we have to make sure the data is ready for visualization. Problem is, most of the time, we get messy data (naming, nulls, empty rows, wrong types, ordering, etc), which means we have to prepare it, by cleaning it and transforming the data in the form we can use for the visualization we want. In R, we can do data transformation using the `dplyr` package. It is already packaged with the tidyverse package. 
+
+In this exercise, I'll be using datasets from the `nycflights13` package. To see the datasets in the package, `nycflights13::`, and as you're typing this, Rstudio would show datasets, else, click on **Tab** button. Another way would be running the following on R studio console 
+
+```{r}
+library(help = nycflights13)
+```
+
+It'll show information about the package in the editor pane on R studio. 
+
+```{r}
+flights
+```
+
+The above would print the first few rows of the `flights` dataset. To see the full dataset, I can run `View(flights)` on the consolve, which would display the dataset neatly in Rstudio Viewer. The viewer that neat because the dataset is a tibble (which is a wrapper around dataframes). Some packages for reading in data into R would return a tibble, when they do, it tries to guess the data type of each column if that information isn't provided, which is why, when we look at the dataset, we can find the data type of each column under the column name of a tibble dataframe. They're abbreviations described below  
+
+- `int` stands for integers  
+- `dbl` stands for doubles or real numbers  
+- `chr` for character vectors, or strings  
+- `dttm` for date times (date + time)  
+- `lgl` for logical types (True or False)  
+- `fctr` stands for factors, which R uses to represent categorical variables with fixed possible values.  
+- `date` stands for dates  
+
+As I said earlier, `dplyr` is R's main cleaning and data transformation (data manipulation) package. Some functions are really core in this package, which are usually involved in any data manipulation process. These are  
+
+- `filter()` - Pick observations by their values. i.e selecting observations that match given conditions  
+- `arrange()` - Reordering rows in a given way  
+- `select()` - Pick columns by their names  
+- `mutate()` - Create new variables from existing ones  
+- `summarise()` - Collapse many variables into a summary 
+- `group_by()` - Creating a scope on which to apply the functions above (and others). Like performing operations on a group by group basis. All these functions has variations and arguments that makes them more powerful.   
+
+All functions of the dplyr package works with a similar pattern; the first argument is a data frame, the second argument describes what to do with the data frame, using the variable names (without quotes) if needs be. We can make use of piping here to make things much better. For example;
+
+```{r}
+flights %>%
+  select(starts_with("dep"), starts_with("arr")) %>%
+  summarise_at(.funs = funs(mean(., na.rm = TRUE)), 
+               .vars = names(.))
+```
+
+
+
