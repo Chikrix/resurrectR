@@ -1,0 +1,57 @@
+---
+title: "Visualisation Basics"
+author: "Chidi"
+date: "11/20/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE, warning=FALSE, cache=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+## Visualisation Basics
+
+Data visualisation is one of the most important tools of data science. In R, the main (and most common) library for visualisation is the **ggplot2** package. In this section, I'll be going through important concepts for using this package.   
+
+### Aestistics mapping with ggplot2  
+
+An aestistic is a visual property of the objects in your plot. It includes things like size, colors of your points or lines or whatever, shapes, etc. The following shows how I'm mapping the `class` variable to the plot with a color aestistic on a scatterplot  
+
+```{r eg1}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, colour = class))
+```
+
+With this idea of aestistics, it means we can add a different property to an n dimensional plot with given aestistic properties, like I can add the class above to be different shapes for each car class type, or map a condition to an aestistic property, etc.
+
+To map something to an aestistic with ggplot, you'll have to add it in the aes() function of the mapping parameter in the geom function for which you want to map something to. In doing so, ggplot2 would automatically assign a unique level of the aestistic to each unique value of the variable, this is known as **scaling**. ggplot2 would also adds a legend to the side of the plot that explains which levels correspond to a value. All this is done automatically, but can still be controlled.  
+
+Now I could have mapped the `class` variable to a size aestistic, like below  
+
+```{r eg2}
+ggplot(data = mpg, aes(x = displ, y = hwy, size = class)) + 
+    geom_point()
+```
+
+In the plot above, each car `class` is mapped with its own point size as shown in the legend. However, I get the warning -  *Warning: Using size for a discrete variable is not advised.*, this is because I'm mapping an ordered variable (`class`) to an ordered aestistic - **size**, which is not a good idea, and therefore not recommended.
+
+Take a look at the plots below
+
+```{r eg3, warning=FALSE, echo=TRUE, cache.lazy=TRUE, message=FALSE}
+if (!require("cowplot")) {
+  install.packages("cowplot")
+} else {
+  theme_set(theme_bw(base_size = 8))
+  plot_with_alpha_aes <- 
+    ggplot(data = mpg, aes(x = displ, y = hwy, alpha = class)) + 
+    geom_point()
+  
+  plot_with_shape_aes <- 
+    ggplot(data = mpg, aes(x = displ, y = hwy, shape = class)) + 
+    geom_point()
+  plot_grid(plot_with_alpha_aes, plot_with_shape_aes, 
+            labels = "AUTO", ncol = 1)
+}
+```
+

@@ -89,11 +89,11 @@ library(help = nycflights13)
 
 It'll show information about the package in the editor pane on R studio. 
 
-```{r}
-flights
+```{r cache=TRUE, warning=FALSE, results='asis'}
+knitr::kable(sample_n(flights, 20))
 ```
 
-The above would print the first few rows of the `flights` dataset. To see the full dataset, I can run `View(flights)` on the consolve, which would display the dataset neatly in Rstudio Viewer. The viewer that neat because the dataset is a tibble (which is a wrapper around dataframes). Some packages for reading in data into R would return a tibble, when they do, it tries to guess the data type of each column if that information isn't provided, which is why, when we look at the dataset, we can find the data type of each column under the column name of a tibble dataframe. They're abbreviations described below  
+To see the full dataset, I can run `View(flights)` on the consolve, which would display the dataset neatly in Rstudio Viewer. The viewer that neat because the dataset is a tibble (which is a wrapper around dataframes). Some packages for reading in data into R would return a tibble, when they do, it tries to guess the data type of each column if that information isn't provided, which is why, when we look at the dataset, we can find the data type of each column under the column name of a tibble dataframe. They're abbreviations described below  
 
 - `int` stands for integers  
 - `dbl` stands for doubles or real numbers  
