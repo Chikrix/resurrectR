@@ -55,5 +55,121 @@ if (!require("cowplot")) {
 }
 ```
 
+In the first one (alpha), the `suv` and `subcompact` categories are both plotted with the same alpha, this is because, by default only six categories can be plotted at the same time by ggplot2 for the alpha aestistic property, same with the second one (shape), in this case, `suv` isn't even mapped to a shape aestistic. Note this when setting aestistic properties with ggplot2     
+
+Aside from setting aestistic properties to represent some variable mapping, we can set this for just the normal plotting, to do this, we have to set it outside the `aes()` parameter but inside the geom property, or generically in the ggplot constructor parameter. For example  
+
+```{r eg4}
+
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy), colour = "cyan", shape = 20, size = 4)
+  
+```
+
+R has 25 built in shapes that are identified by numbers 1 to 25 from which we can select for our desired shapes. You can check the documentation of points `?points` to see the different shapes
+
+### Exercises  
+
+#####1. What’s gone wrong with this code? Why are the points not blue  
+
+```{r exercise1}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy, color = "blue"))
+```
+
+I think what is wrong with the above plot is that, color should receive a factor/category represented in the mpg dataset, but instead it gets the wrong type, which isn't the effect we want. If we want to make the data points blue, then we should move the color argument out of the `aes()` funtion like below  
+
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy), color = "blue")
+```
+
+#####2. Which variables in `mpg` are categorical? Which variables are continuous? (Hint: type ?mpg to read the documentation for the dataset). How can you see this information when you run mpg?  
+
+```{r}
+?mpg
+head(mpg)
+glimpse(mpg)
+```
+
+Categorical variables in the dataset includes `manufacturer`, `model`, `trans`, `drv`, `fl`, `class`. This can be seen from the above under each column name, alternatively I can use `glimpse(mpg)` to see this.   
+
+```{r cache=TRUE}
+mpg %>%
+  select(which(sapply(., function(x) typeof(x) %in% "character"))) %>%
+  sapply(., table)
+```
+
+The above is the categorical variables are the number of each category in the categorical variable. Continuous variables in the dataset would be `cty`, `hwy`, `displ` and `cyl` (I think there can be any number of this as well), `year` would be a discrete variable
+
+#####3. Map a continuous variable to color, size, and shape. How do these aesthetics behave differently for categorical vs. continuous variables?  
+
+```{r}
+if (!require("cowplot")) {
+  install.packages("cowplot")
+} else {
+  theme_set(theme_bw(base_size = 8))
+  plot_with_size <- 
+    ggplot(data = mpg) + 
+    geom_point(mapping = aes(x = displ, y = hwy, size = displ))
+  
+  plot_with_colour <- 
+    ggplot(data = mpg) +
+    geom_point(mapping = aes(x = displ, y = hwy, colour = cty))
+  
+  plot_grid(plot_with_size, plot_with_colour, 
+            labels = "AUTO", ncol = 1)
+}
+
+```
+
+From the above, if it were a categorical variable, it would have shown which category was mapped to which aestistic property (colour in this example) in the legend on the side, this is different from a continuous variable in which categories aren't clear in the plot (rightly so though as I don't have a category there). This is also some useful plot though as it can be used in some kind of context (I think), like to show some progress across data points and maybe find patterns, something like that. Note that a continuous variable cannot be mapped to a shape aestistic as the following would throw an error  
+
+```
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, shape = displ))
+  
+# Error: A continuous variable can not be mapped to shape
+```
+
+#####4. What happens if you map the same variable to multiple aesthetics?  
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, colour = class, shape = class)) +
+  scale_shape_manual(values = c(0:7))
+```
+
+When mapping the same variable to multiple aestistics, it applies those aestistics to each of the categories, like from the above, I mapped class to both size and colour aestistics, so it applied different sizes to each of the class category, and different colours to each of the category. Doing this doesn't really any value to the plot than if I had used one aestistic property for the variable.  
+
+#####5. What does the stroke aesthetic do? What shapes does it work with? (Hint: use ?geom_point)
+
+From the documentation, stroke aestistic is used to modify the border width of shapes that has border like shape 21. Example  
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy), 
+             shape = 1, 
+             stroke = 3, 
+             colour = "red",
+             fill = "white")
+```
+
+#####6. What happens if you map an aesthetic to something other than a variable name, like aes(colour = displ < 5)
+
+```{r}
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy, colour = displ < mean(displ)))
+```
+
+It tries to create a variable from the expression and applies that aestistic property to data points of the expressions result. In the example above, it creates a categorical variable of either true or false, and applies the aestistic property based on the true or false values. The above is similar to the following  
+
+```{r}
+mpg %>%
+  select(hwy, displ) %>%
+  mutate(above_mean = displ > mean(displ, na.rm = T)) %>%
+  ggplot(data = .) +
+  geom_point(mapping = aes(x = displ, y = hwy, colour = above_mean))
+```
 
 
