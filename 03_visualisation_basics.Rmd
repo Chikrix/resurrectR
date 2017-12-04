@@ -296,12 +296,10 @@ plot_grid(
 
 Taking a look at both plots above, whats obvious is that when there're many unique values, its better to have them in the column, than in the rows because its easier to see the values and make comparisons.  
 
-
-
 ### Geometric Objects  
 When plotting, we can make plots of the same variables but with different visual representation of the data, in ggplot2, we say with different **geoms**, which shortens for *geometric objects*. For example, see the plots below  
 
-```{r fig.cap='Geometric objects'}
+```{r warning=FALSE}
 theme_set(theme_bw(base_size = 8))
 ggplot(data = mpg) +
   geom_point(mapping = aes(x = displ, y = hwy))
@@ -309,26 +307,125 @@ plot_grid(ggplot(data = mpg) +
             geom_point(mapping = aes(x = displ, y = hwy)), 
           ggplot(data = mpg) +
             geom_smooth(mapping = aes(x = displ, y = hwy)),
-          labels = "AUTO", cols = 1)
+          labels = "AUTO", ncol = 1)
 ```
 
 They both plot the same variables, but use different geometric objects (geoms). Formally, a **geom** is a geometric object that a plot uses to represent data. So usually, plots are defined by the type of geom that was used to describe the data. 
 
 An example of `geom_smooth` with different aestistic properties would be  
 
-```{r}
+```{r warning=FALSE}
 ggplot(data = mpg) +
-            geom_smooth(mapping = aes(x = displ, y = hwy, linetype = drv, colour = drv))
+  geom_smooth(mapping = aes(x = displ, y = hwy, linetype = drv, colour = drv))
 ```
 In the plot above, I'm drawing a smooth line for each `drv` category with a different color
 
-We can use different geoms on a plot. In one of the examples above, the first one is a scatter plot, which uses a point geom, the next one is a smooth geom, which adds a smooth line to the data to see trends.  
-I can combine both together into a single plot with ggplot2;  
-
-```{r}
+We can use different geoms on a plot. In the example before the one above, plot A is a scatter plot, which uses a point geom, and plot B is a smooth geom, which adds a smooth line to the data to see trends.  
+I can combine both together into a single plot in ggplot2;  
+ 
+```{r warning=FALSE}
 ggplot(mpg, mapping = aes(x = displ, y = hwy)) +
   geom_point(aes(colour = drv)) +
   geom_smooth(aes(linetype = drv, colour = drv))
 ```
 
-From the above, I can see that, we can combine different geometric properties, as well as aestistics for these geoms together in a single plot.  From the plot
+From the above, we can see that, I've combined different geometric properties, as well as specific aestistics for these geoms in a single plot.  Note in the plot above how I put the `mapping` argument in the `ggplot` call and not in the `geom` function, the mapping above would act as the global argument for its `geom` functions, unless I want to use a different mapping for a geom function. This is how we make things DRY with ggplot2.
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
+  geom_point(mapping = aes(colour = class)) +
+  geom_smooth(data = filter(mpg, class == "subcompact"), se = FALSE)
+```
+
+In the example above, `geom_smooth` is using its own data, which would override that provided in `ggplot` function, but it'll still use the aes property in its `ggplot` call since that was overriden, then it draws the smooth line for that filter. Its kind of doing the same thing as the following (ignoring the false argument line, and I intentionally decided not to add the points)  
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
+  geom_smooth(aes(colour = class == "subcompact"), se = FALSE)
+```
+
+ggplot2 has over 30 geoms, and even more in an extensions package found [here](https://www.ggplot2-exts.org). A good way to see ggplot2 geoms would be to use the cheatset provided. You can download it [here](http://rstudio.com/cheatsheets), or in Rstudio, click on *help > Cheatsheets > Data visualization with ggplot2* to download the cheatsheet. Remember that you can always check about a geom function like any other function using `?function_name` 
+
+
+### Exercises 
+##### 1. What geom would you use to draw a line chart? A boxplot? A histogram? An area chart?  
+
+```{r}
+#> Line graph connects the points in the plot together
+plot_grid(ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
+            geom_line() + # draws the line chart.
+            geom_point(shape = 21, fill = "white") +
+            ggtitle("Line graph"), 
+          ggplot(data = mpg, mapping = aes(x = class, y = displ)) +
+            geom_boxplot() + # draws the boxplot
+            ggtitle("Box-plot") +
+            ylab("Engine displacement") +
+            xlab("Type of car"), 
+          ggplot(data = mpg, mapping = aes(hwy)) +
+            geom_histogram(aes(y = ..density..), 
+                           binwidth = .5, 
+                           colour = "white",
+                           fill = "black") + # geom_histogram plots a histogram
+            ggtitle("Histogram"),
+          ggplot(data = economics, mapping = aes(x = date, y = unemploy)) +
+            geom_area() +  # makes an area plot
+            ggtitle("Area chart") +
+            ylab("Unemployed"),
+          ggplot(data = mpg, aes(hwy)) +
+            geom_area(stat = "bin") + # also makes an area plot
+            ggtitle("Area chart"),
+          ncol = 1)
+```
+
+##### 2. Run this code in your head and predict what the output will look like. Then, run the code in R and check your predictions.  
+
+```{r}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy, color = drv)) + 
+  geom_point() + 
+  geom_smooth(se = FALSE)
+```
+
+Haha, I predicted well. 
+
+##### 3. What does show.legend = FALSE do? What happens if you remove it?
+Why do you think I used it earlier in the chapter?  
+
+show.legend = FALSE would hide the legend that shows on the right of a plot with an aestistic property. By deafult its true, hence why we see the legend when we don't specify this argument. 
+
+##### 4. What does the se argument to geom_smooth() do?  
+
+`se` would remove the confidence interval drawn in around the smooth line in `geom_smooth` 
+
+##### 5. Will these two graphs look different? Why/why not?  
+
+```{r}
+first <- ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
+  geom_point() + 
+  geom_smooth()
+
+second <- ggplot() + 
+  geom_point(data = mpg, mapping = aes(x = displ, y = hwy)) + 
+  geom_smooth(data = mpg, mapping = aes(x = displ, y = hwy))
+
+plot_grid(first, second)
+```
+
+They'll not look different because they'll both using the same data and plotting the same things, the first plot is better because it helps us avoid repeating ourselves as the second one shows.  
+
+##### 6. Recreate the R code necessary to generate the following graphs.  
+
+```{r}
+plot_grid(ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
+            geom_point() +
+            geom_smooth(se = FALSE),
+          ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
+            geom_point() +
+            geom_smooth(aes(group = drv), se = FALSE),
+          ggplot(data = mpg, mapping = aes(x = displ, y = hwy, colour = drv)) +
+            geom_point() +
+            geom_smooth(se = FALSE),
+          ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
+            geom_point(aes(colour = drv)) +
+            geom_smooth(se = FALSE),
+          ncol = 2)
+```
