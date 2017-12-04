@@ -12,6 +12,7 @@ knitr::opts_chunk$set(
   collapse = TRUE)
 
 library(tidyverse)
+library(cowplot)
 ```
 
 ##### PS: Answers to exercises are what I think they are at the moment of writing. May have to come back to it when I think I know a better answer, and my answers may be wrong  
@@ -294,3 +295,40 @@ plot_grid(
 ```
 
 Taking a look at both plots above, whats obvious is that when there're many unique values, its better to have them in the column, than in the rows because its easier to see the values and make comparisons.  
+
+
+
+### Geometric Objects  
+When plotting, we can make plots of the same variables but with different visual representation of the data, in ggplot2, we say with different **geoms**, which shortens for *geometric objects*. For example, see the plots below  
+
+```{r fig.cap='Geometric objects'}
+theme_set(theme_bw(base_size = 8))
+ggplot(data = mpg) +
+  geom_point(mapping = aes(x = displ, y = hwy))
+plot_grid(ggplot(data = mpg) +
+            geom_point(mapping = aes(x = displ, y = hwy)), 
+          ggplot(data = mpg) +
+            geom_smooth(mapping = aes(x = displ, y = hwy)),
+          labels = "AUTO", cols = 1)
+```
+
+They both plot the same variables, but use different geometric objects (geoms). Formally, a **geom** is a geometric object that a plot uses to represent data. So usually, plots are defined by the type of geom that was used to describe the data. 
+
+An example of `geom_smooth` with different aestistic properties would be  
+
+```{r}
+ggplot(data = mpg) +
+            geom_smooth(mapping = aes(x = displ, y = hwy, linetype = drv, colour = drv))
+```
+In the plot above, I'm drawing a smooth line for each `drv` category with a different color
+
+We can use different geoms on a plot. In one of the examples above, the first one is a scatter plot, which uses a point geom, the next one is a smooth geom, which adds a smooth line to the data to see trends.  
+I can combine both together into a single plot with ggplot2;  
+
+```{r}
+ggplot(mpg, mapping = aes(x = displ, y = hwy)) +
+  geom_point(aes(colour = drv)) +
+  geom_smooth(aes(linetype = drv, colour = drv))
+```
+
+From the above, I can see that, we can combine different geometric properties, as well as aestistics for these geoms together in a single plot.  From the plot
