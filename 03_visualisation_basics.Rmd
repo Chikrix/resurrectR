@@ -429,3 +429,4 @@ plot_grid(ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
             geom_smooth(se = FALSE),
           ncol = 2)
 ```
+

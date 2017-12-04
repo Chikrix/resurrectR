@@ -1,0 +1,33 @@
+---
+title: "Manipulation Basics"
+author: "Chidi"
+date: "12/4/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  comment = "#>",
+  collapse = TRUE)
+
+library(tidyverse)
+library(nycflights13)
+```
+
+Some common data manipulation functions are `filter`, `select`, `mutate`, `group_by`, `summarise`, these are usually used when performing data manipulation.  
+
+### Filter  
+
+`filter()` allows us subset observations based on their values. The first argument is the name of the dataset, subsequest argument are the expressions for filtering the data frame. 
+
+```{r}
+filter(flights, month == 1, day == 1)
+```
+
+When comparing different floating numbers, use the `near` function. 
+
+```{r}
+filter(flights, month == 1 & day == 1)
+filter(flights, month %in% c(11, 12))
+```
