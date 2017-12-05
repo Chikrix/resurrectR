@@ -5,12 +5,15 @@ date: "12/4/2017"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include=FALSE, warning=FALSE, echo=TRUE, message=FALSE}
 knitr::opts_chunk$set(
   echo = TRUE,
   comment = "#>",
-  collapse = TRUE)
+  collapse = TRUE,
+  cache = TRUE)
+```
 
+```{r include=TRUE, warning=FALSE, echo=TRUE, message=FALSE}
 library(tidyverse)
 library(nycflights13)
 ```
@@ -25,9 +28,54 @@ Some common data manipulation functions are `filter`, `select`, `mutate`, `group
 filter(flights, month == 1, day == 1)
 ```
 
-When comparing different floating numbers, use the `near` function. 
+When comparing different floating numbers, use the `near` function. Take the following example  
+
+```{r}
+sqrt(2) ^ 2 == 2 # returns false, but should be true 
+(1/49) * 49 == 1 # returns false too, but should be true
+```
+The above expressions returned false, but should have been true, this is because, computers use finite precision arithmetic, so every number is an approximation. So to avoid that, use the `near` function   
+
+```{r}
+near(sqrt(2) ^ 2, 2) # returns True
+near(1/49 * 49, 1) # also returns true
+```
+
+Other filtering examples  
 
 ```{r}
 filter(flights, month == 1 & day == 1)
-filter(flights, month %in% c(11, 12))
+filter(flights, month == 11 | month == 12) # is similar to the the following below
+filter(flights, month %in% c(11, 12)) 
 ```
+
+Also, we can simplify complicated subsetting using some basic equation rules (De Morgan's Law); 
+
+```
+!(x | y) is the same as (!x | !y)
+!(x & y) is the same as (!x & !y)
+```
+
+So for example  
+```{r}
+filter(flights, !(arr_delay > 120 | dep_delay > 120)) 
+# Or
+filter(flights, arr_delay <= 120, dep_delay <= 120)
+```
+
+Note that expressions involving **NA** values are always **NA**, for example  
+
+```{r}
+x <- NA
+y <- NA
+x == y # evaluates to NA
+4 == NA # returns NA too
+```
+This is because NA is like saying "we don't know", "Not available", so it could be something, but we don't know its value as it isn't available.  We can check for NA with the `is.na`.  `filter` only includes rows that evaluates to true on the given conditions and excludes False and NA results. If I want to include NA values, I'll have to explicitly ask for them. For example  
+
+```{r}
+df <- tibble(x = c(1, NA, 3))
+filter(df, x > 1) # returns only 3
+filter(df, x > 1 | is.na(x)) # returns NA and 3
+```
+
