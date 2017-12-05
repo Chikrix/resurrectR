@@ -13,12 +13,14 @@ knitr::opts_chunk$set(
   cache = TRUE)
 ```
 
+#### Note: Answers to questions are what I think they are at the time of writing them. Would have to come back to check my aswers again. 
+
+Some common data manipulation functions are `filter`, `select`, `mutate`, `group_by`, `summarise`, these are usually used when performing data manipulation.  
+
 ```{r include=TRUE, warning=FALSE, echo=TRUE, message=FALSE}
 library(tidyverse)
 library(nycflights13)
 ```
-
-Some common data manipulation functions are `filter`, `select`, `mutate`, `group_by`, `summarise`, these are usually used when performing data manipulation.  
 
 ### Filter  
 
@@ -79,3 +81,64 @@ filter(df, x > 1) # returns only 3
 filter(df, x > 1 | is.na(x)) # returns NA and 3
 ```
 
+
+### Exercises  
+
+##### 1. Find all flights that
+###### a. Had an arrival delay of two or more hours
+###### b. Flew to Houston (IAH or HOU)
+###### c. Were operated by United, American, and Delta
+###### d. Departed in summer (July, August, and September)
+###### e. Arrived more than two hours late, but didn’t leave late
+###### f. Were delayed by at least an hour, but made up over 30 minutes in flight
+###### g. Departed between midnight and 6am (inclusive)  
+
+Use `?flights` to get information on the data set, to at least know which variables are appropriate. For example, from there, I got to see that the `carrier` variable is the two letter code of airlines name, and the full names are found in the `airlines` dataset, this helped me answer question 1c.  
+
+```{r cache=TRUE}
+ans_a <- filter(flights, arr_delay >= 120)
+ans_b <- filter(flights, dest %in% c("IAH", "HOU"))
+# from the airlines data set, the code for the airlines in question 1c are UA, AA, and DL. 
+ans_c <- filter(flights, carrier %in% c("UA", "AA", "DL"))
+
+# Another way I can answer C would be the following
+airlines_flights <- merge(airlines, flights) # this is a new dataframe with all unique variables in both datasets, from there I have the names in the question
+ans_c <- filter(airlines_flights, grepl("American|Delta|United", name, ignore.case = TRUE))
+ans_d <- filter(flights, month %in% c(7:9)) 
+## I can also use between to do the above
+ans_d <- filter(flights, between(month, 7, 9))
+ans_e <- filter(flights, arr_delay > 120 & dep_delay <= 0)
+ans_f <- filter(flights, dep_delay >= 60 & dep_delay - arr_delay > 30)
+
+# time here is represented in 24hrs, so 6am == 6:00am is 600 here, 13:00 is 1300, etc
+ans_g <- filter(flights, dep_time >= 2400 | dep_time <= 600)
+flights_size = nrow(flights)
+```
+
+Based on the above, for flights away from NYC in 2013, **`r round((nrow(ans_a)/flights_size) * 100, 2)`%**  of those flights had an arrival delay of two or more hours. There were **`r nrow(ans_b)`** flights to Houston. Three airlines (United, American, and Delta) operated a total of **`r nrow(ans_c)`** flights from NYC, which was about **`r round((nrow(ans_c)/flights_size) * 100, 2)`%** of all the flights from NYC that year. 
+**`r round((nrow(ans_d)/flights_size) * 100, 2)`%** of all flights were made during the summer that year. **`r nrow(ans_e)`** flights arrived over two hours late, but had no departure delay, why? And finally, about **`r round((nrow(ans_g)/flights_size) * 100, 2)`%** of the flights from NYC in 2013 were between midnight and 6am.  
+
+##### 2. Another useful dplyr filtering helper is between(). What does it do? Can you use it to simplify the code needed to answer the previous challenges?  
+
+Between is a shortcut for the condition `x >= left & x <= right`. I used it above as well to geth the result for question 1d (`ans_d`) above.  
+
+##### 3. How many flights have a missing dep_time? What other variables are missing? What might these rows represent? 
+
+```{r warning=FALSE}
+missing_dep_time <- flights %>%
+  filter(is.na(dep_time)) %>%
+  count()
+
+(variables_with_missing_names <- names(which(apply(flights, 2, function(x) any(is.na(x))))))
+```
+
+**`r missing_dep_time$n`** flights has missing departure time. 
+
+##### 4. Why is NA ^ 0 not missing? Why is NA | TRUE not missing? Why is FALSE & NA not missing? Can you figure out the general rule? (NA * 0 is a tricky counterexample!)
+
+```{r}
+NA ^ 0 # I think because (mathematically), anything to the power of 0 is always 1
+NA | TRUE # Could be because OR needs just one condition to be true to evaluate to true
+FALSE & NA # Similar to the one above, AND would always evaluate to false given at least one false expression
+NA * 0 # Could be because this expression is like saying "Something thats not available zero times", which should result to "something thats not available". Thats my logical answer for this one, may not be completely right. 
+```
