@@ -142,3 +142,50 @@ NA | TRUE # Could be because OR needs just one condition to be true to evaluate 
 FALSE & NA # Similar to the one above, AND would always evaluate to false given at least one false expression
 NA * 0 # Could be because this expression is like saying "Something thats not available zero times", which should result to "something thats not available". Thats my logical answer for this one, may not be completely right. 
 ```
+
+
+### Mutate  
+
+Mutating data is about creating new columns from existing columns in the data set. With dplyr's `mutate()`, we can create new variables.  
+
+```{r}
+flights %>% 
+  mutate(gain = arr_delay - dep_delay,
+         hours = air_time / 60,
+         speed = distance / air_time * 60,
+         gains_per_hour = gain/hours)
+```
+
+The above mutate would append the newly created variables to the previous ones, but if I want to take the result of only the newly created variables, I'll use `transmute` instead of `mutate`.  
+
+```{r}
+flights %>% 
+  transmute(gain = arr_delay - dep_delay,
+         hours = air_time / 60,
+         speed = distance / air_time * 60,
+         gains_per_hour = gain/hours)
+```
+
+When creating new variables with mutate or transmute, the function should take be able to work on vectors and return a vector of the the same size. Arithmetic functions like +, -, *, /, etc are all vectorised, and can be used with aggregate functions, which is a vectorised operation, and would return a vector, eg `y / sum(y)`. Modular arithmetic, like integer division `%/%` and `%%` (remainder) are also vectorised, and can be useful as it can help us break integers into pieces. For example;
+
+```{r}
+flights %>%
+  transmute(dep_time,
+            hour = dep_time %/% 100,
+            minutes = dep_time %% 100)
+```
+
+Logarithms are also very useful transformations for dealing with data of multiple orders of magintude. Using `log2` transformation was recommended in the book (R for Data science), given that they're easy to interprete. 
+
+`lead` and `lag` functions are also useful functions as they allows us refer to leading or lagging values. They can be very useful functions when combined with `group_by`
+
+```{r}
+(x = 1:10)
+lead(x)
+lag(x)
+x - lag(x)
+x != lag(x)
+lag(1:10, 5)
+```
+
+Other possible useful functions we might want to use includes cummulative and aggregate functions (like `cumsum`, `cumprod`, dplyr's `cummean`), logical comparisons, ranking (like `min_rank`, `row_number`, `dense_rank`, `percent_rank`, `ntile`, etc)
