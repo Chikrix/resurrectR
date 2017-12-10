@@ -13,7 +13,7 @@ knitr::opts_chunk$set(
   cache = TRUE)
 ```
 
-#### Note: Answers to questions are what I think they are at the time of writing them. Would have to come back to check my aswers again. 
+##### Note: Answers to questions are what I think they are at the time of writing them. Would have to come back to check my aswers again. All answers are originally mine. When I use some help for the answers, its for a question I don't know, or to check my own answer, and I'll always reference the resource if I find one.
 
 Some common data manipulation functions are `filter`, `select`, `mutate`, `group_by`, `summarise`, these are usually used when performing data manipulation.  
 
@@ -189,3 +189,106 @@ lag(1:10, 5)
 ```
 
 Other possible useful functions we might want to use includes cummulative and aggregate functions (like `cumsum`, `cumprod`, dplyr's `cummean`), logical comparisons, ranking (like `min_rank`, `row_number`, `dense_rank`, `percent_rank`, `ntile`, etc)
+### Exercises
+
+##### 1. Currently dep_time and sched_dep_time are convenient to look at, but hard to compute with because they’re not really continuous numbers. Convert them to a more convenient representation of number of minutes since midnight. 
+
+```{r}
+flights %>%
+  mutate(dep_time_since_midnight = dep_time %% 100 + dep_time %/% 100 * 60,
+         sched_dep_time_since_midnight = sched_dep_time %% 100 + sched_dep_time %/% 100 * 60) %>%
+  select(contains("dep_time"))
+```
+
+##### 2. Compare air_time with arr_time - dep_time. What do you expect to see? What do you see? What do you need to do to fix it?
+
+```{r}
+(air_times <- flights %>%
+  mutate(arr_dep_diff = arr_time - dep_time,
+         arr_dep_diff_mins = arr_dep_diff %/% 100 * 60 + arr_dep_diff %% 100,
+         air_time_mins = air_time) %>%
+   select(dep_time, arr_time, air_time_mins, arr_dep_diff_mins)) 
+```
+
+I expected to see that the difference between arr_time and dep_time should be equal to the air_time, but this wasn't the case. I couldn't figure out why it was so, but according to a solution by [Jeffery Arnold](https://jrnold.github.io/e4qf/data-transformation.html), the difference is due to difference in timezone between the departure and arrival locations, and so to fix it, we need to account for the time zone differences.  
+
+##### 3. Compare dep_time, sched_dep_time, and dep_delay. How would you expect those three numbers to be related?  
+
+```{r}
+flights %>%
+  select(dep_time, sched_dep_time, dep_delay)
+```
+
+I'll expect the sum of `sched_dep_time` and `dep_delay` to equal the `dep_time` for each row. To test this, 
+
+```{r}
+to_min <- function(hr_min) {
+  hr_min = abs(hr_min)
+  hrs_to_min = hr_min %/% 100 * 60
+  no_of_mins = hr_min %% 100
+  hrs_to_min + no_of_mins
+}
+
+to_hr_min <- function(time_in_mins) {
+  time_in_mins = abs(time_in_mins)
+  hrs = time_in_mins %/% 60
+  mins = time_in_mins %% 60
+  time = as.integer(paste0(hrs, sprintf("%02d", mins)))
+  time %% 2400
+}
+
+flights %>%
+  select(dep_time, sched_dep_time, dep_delay) %>%
+  filter(!is.na(dep_time)) %>%
+  mutate(sched_delay_sum = (to_hr_min(to_min(sched_dep_time) + dep_delay)),
+         same_as_dep_time = (sched_delay_sum == dep_time) | sched_delay_sum == 0) %>%
+  summarise(all_true = mean(same_as_dep_time) == 1)
+```
+
+I solved the question above using the approach above. Quite a long approach, after solving, I realized it can be simpler, I followed the approach becuase I think I didn't think through the question properly. Here's an easier approach based on [Jeffery Arnold](https://jrnold.github.io/e4qf/data-transformation.html)'s solution.  
+
+```{r}
+time2mins <- function(x) {
+  x %/% 100 * 60 + x %% 100
+}
+
+flights %>%
+  select(dep_time, sched_dep_time, dep_delay) %>%
+  mutate(dep_delay2 = time2mins(dep_time) - time2mins(sched_dep_time)) 
+
+# Although this implementation doesn't account for all differences, its an easy fix and I understand why
+```
+
+From the example above, I still arrive at the same answers as my own implementation, but mine was unnecessarily more complex, because I did different math. This is interesting for me because it meant I didn't think through the problem well and do my math properly. So its important to keep this in mind, especially following the approach, do it first the simplest way you can, then improve solution and fine tune. An approach to improving could be extracting my solution to an equation, and then simplifying the equation, but still, think about a problem well.  
+
+##### 4. Find the 10 most delayed flights using a ranking function. How do you want to handle ties? Carefully read the documentation for min_rank()  
+
+```{r}
+flights %>%
+  mutate(ranked = min_rank(dep_delay)) %>%
+  arrange(-ranked) %>% # arrange by "ranked" in descending order
+  top_n(10)
+```
+
+I can use different tie methods for ranking functions, like `min`, `first`, `average`, etc (see `?rank`). With `min_rank`, it assigns the lowest rank to the smallest value in list of size N, and the highest rank to the highest value in the list, starting from 1 to N. With `min_rank`, values that are tied (the same value) are assigned to the same rank value. See this example between `min` and `max` rank;
+
+```{r, include = FALSE, echo = FALSE}
+rank(c(2,3,4,5,4,4), ties.method = "min")
+#> [1] 1 2 3 6 3 3
+rank(c(2,3,4,5,4,4), ties.method = "max")
+#> [1] 1 2 5 6 5 5
+```
+
+The output for *min* rank is based on the minimum value of the ranked values (`seq_along(N)`), and that for *max* is based on the maximum value of the ranked values.  
+
+##### 5. What does 1:3 + 1:10 return? Why?
+
+```{r warning = TRUE}
+1:3 + 1:10
+```
+
+First, it returns a warning that the *"longer object length is not a multiple of shorter object length"*, because the lengths are not the same, so what it computes returns is like spreading the smaller vector over longer one and adding them together, i.e `c(1,2,3,1,2,3,1,2,3,1) + c(1:10)` in this example, and adding them together index by index.  
+
+##### 6. What trigonometric functions does R provide?
+
+R has trig functions like `cos`, `sin`, `tan`, `acos`, `asin`, etc. I used `?cos` to find all of them as they're on the same page. 
