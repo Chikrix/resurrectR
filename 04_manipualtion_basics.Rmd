@@ -189,7 +189,7 @@ lag(1:10, 5)
 ```
 
 Other possible useful functions we might want to use includes cummulative and aggregate functions (like `cumsum`, `cumprod`, dplyr's `cummean`), logical comparisons, ranking (like `min_rank`, `row_number`, `dense_rank`, `percent_rank`, `ntile`, etc)
-### Exercises
+### Exercises  
 
 ##### 1. Currently dep_time and sched_dep_time are convenient to look at, but hard to compute with because they’re not really continuous numbers. Convert them to a more convenient representation of number of minutes since midnight. 
 
@@ -292,3 +292,106 @@ First, it returns a warning that the *"longer object length is not a multiple of
 ##### 6. What trigonometric functions does R provide?
 
 R has trig functions like `cos`, `sin`, `tan`, `acos`, `asin`, etc. I used `?cos` to find all of them as they're on the same page. 
+
+
+
+
+### Grouped summaries with `summarise`  
+
+`summarise` collapses a dataframe into a single row. 
+
+```{r}
+summarise(flights, delay = mean(dep_delay, na.rm = TRUE))
+```
+
+`summarise` can be very handy when we combine with a grouping transformation like `group_by`. When we group a dataframe by some variable, when we then apply dplyr verbs on the dataframe, it applies it group by group. 
+
+```{r}
+flights %>%
+  group_by(year, month, day) %>%
+  summarise(delay = mean(dep_delay, na.rm = TRUE))
+```
+
+In the above, I'm grouping by year, for each year group, I group by month, and for each month group in the year group, I group by day, and finally, I apply a summary function on each group (year by month by day). 
+
+```{r}
+flights %>%
+  group_by(dest) %>%
+  summarise(count = n(),
+            dist = mean(distance, na.rm = TRUE),
+            delay = mean(arr_delay, na.rm = TRUE)) %>%
+  arrange(-dist) %>%
+  filter(count > 20, dest != "HNL")
+```
+
+The above shows an example of a transformation using the piping operator - `%>%`.   
+
+When doing any kind of aggregation, its always useful to include the count (`n()`), or the count of non-missing values `sum(!is.na(x))`. That way, we can be sure that we're not drawing conclusion on a very small subset of data. Another reason we might want to add the count is because, as data size increases, variation decreases, so we can then start seeing a pattern, by adding the count, this means we can filter out things based on count if necessary. Examples below illustrates these points;
+
+```{r egsummarise}
+delayed_by_tailnum <- flights %>% 
+  filter(!is.na(arr_delay), !is.na(arr_delay)) %>%
+  group_by(tailnum)
+
+delayed_by_tailnum %>%
+  summarise(delay = mean(arr_delay)) %>%
+  ggplot(mapping = aes(x = delay)) +
+  geom_freqpoly(binwidth = 10)
+```
+
+From the above, I see that some flights have delays up to 5hrs on average. But lets check further. I can get more insight by looking at a scatterplot of the number of flights vs average delay
+
+```{r dependson = 'egsummarise'}
+delayed_by_tailnum %>%
+  summarise(delay = mean(arr_delay), count = n()) %>%
+  ggplot(mapping = aes(x = count, y = delay)) +
+  geom_point(alpha = 1/10)
+```
+
+From the above, I see that flights with over high delays are those with lower count, and so this may not be enough to make those variations worth it. In this case, its often useful to filter out the groups with smaller number of observations so I can see the pattern better and less of the extreme variations.
+
+```{r}
+delayed_by_tailnum %>%
+  summarise(delay = mean(arr_delay), count = n()) %>%
+  filter(count > 20) %>%
+  ggplot(mapping = aes(x = count, y = delay)) +
+  geom_point(alpha = 1/10) 
+```
+
+From the above I think I can make better inferences on the flights. 
+
+There're several useful summary functions we can use (including our own functions), **location measures** like `mean`, `median`, **spread measures** like `sd`, `IQR`, `mad`, (IQR and mad are more robust and provide better spread estimates in cases where there're outliers in the dataset), **measures of rank** like `min`, `max`, `quantile(x, .25)`, **position measures** like `first(x)`, `nth(x, 7)`, `last(x)`, there are other summary helper functions too, like I can use `n_distinct` to get the number of unique values in a vector. dplyr also have a function `count`, which can just compute the count of groups, eg  
+
+```{r}
+delayed_by_tailnum %>%
+  count(tailnum)
+
+## the above being equivalent to 
+delayed_by_tailnum %>%
+  summarise(n = n())
+```
+
+We can also provide a weight variable. For example, I can use this to sum the total number of miles a place in the data set covered  
+
+```{r}
+delayed_by_tailnum %>%
+  count(tailnum, wt = distance)
+
+## Would be equivalent to
+
+delayed_by_tailnum %>%
+  summarise(n = sum(distance))
+```
+
+We can also use counts and proportions of logical values. example  
+
+```{r}
+x = c(4,5,6,7,7,3,2)
+(ld4 = x < 4)
+sum(ld4)
+mean(ld4)
+```
+The `sum` above prints 2 because *ld4* is a boolean vector, and in a boolean vector, `FALSE` is 0 and `TRUE` is 1, so it sums the `TRUE`s, so since I have two true values there, that gives me 2. Similar thing applies if I use mean, but the mean would give me the proportion which are true.  
+
+We can remove the grouping using `ungroup`.
+
