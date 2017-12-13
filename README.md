@@ -12,3 +12,5 @@ I'm using this [curriculum](https://dcl-2017-04.github.io/curriculum/upcoming.ht
 - Machine Learning With R Cookbook by Yu Wei and co  
 - Machine Learning for Hackers by Drew Conway and co  
 
+
+Note: Exercises are not confirmed by an authority, they're just my answers to the questions, and may be wrong.
