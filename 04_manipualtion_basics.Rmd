@@ -395,3 +395,196 @@ The `sum` above prints 2 because *ld4* is a boolean vector, and in a boolean vec
 
 We can remove the grouping using `ungroup`.
 
+
+### Exercises  
+
+##### 1. Brainstorm at least 5 different ways to assess the typical delay characteristics of a group of flights. Consider the following scenarios:
+###### a. A `flight` is 15 minutes early 50% of the time, and 15 minutes late 50% of the time.  
+###### b. A `flight` is always 10 minutes late.  
+###### c. A `flight` is 30 minutes early 50% of the time, and 30 minutes late 50% of the time.  
+###### d. 99% of the time a flight is on time. 1% of the time it’s 2 hours late.  
+##### Which is more important: arrival delay or departure delay?  
+
+```{r}
+flight_delays <- flights %>%
+  group_by(flight) %>%
+  filter(!is.na(arr_delay)) %>%
+  summarise(
+    count = n(),
+    fifteen_mins_early = round(mean(arr_delay == -15), 2),
+    fifteen_mins_late = round(mean(arr_delay == 15), 2),
+    thirty_mins_early = round(mean(arr_delay == -30), 2),
+    thrty_mins_late = round(mean(arr_delay == 30), 2),
+    ten_mins_late = round(mean(arr_delay == 10), 2),
+    percent_ontime = round(mean(arr_delay == 0), 2),
+    two_hrs_late = round(mean(arr_delay == 120), 2))
+# a. 
+flight_delays %>%
+  filter(fifteen_mins_early == .5, fifteen_mins_late == .5) # no flight 
+# b. 
+flight_delays %>%
+  filter(ten_mins_late == 1) # 5 flights
+
+# c.
+flight_delays %>%
+  filter(thirty_mins_early == .5, thrty_mins_late == .5) # no flight 
+
+# d
+flight_delays %>%
+  filter(percent_ontime == .99, two_hrs_late == .01) # no flight
+```
+
+I think departure delay is more important. If `is.na(dep_delay) == T`, there's no way to know if there's an arrival delay, i.e `is.na(arr_delay)` would be true. 
+
+```{r}
+flights %>%
+  select(arr_delay, dep_delay) %>%
+  filter(is.na(arr_delay)) %>% ## change to dep_delay to compare the result
+  summarise(arr_per = mean(is.na(arr_delay)),
+            dep_per = mean(is.na(dep_delay)))
+```
+
+Also, I'm hypothesizing that if there's no departure delay, there's not going to be an arrival delay.
+
+```{r}
+flights %>%
+  select(dep_delay, arr_delay) %>%
+  filter(!is.na(dep_delay)) %>%
+  filter(dep_delay == 0 & arr_delay != 0 )
+```
+
+Turns out my hypothesis is wrong, no departure delay doesn't mean there won't be an arrival delay, so as a traveller, I'll look out against flights that always have arrival delay, meaning its more important than departure delays.  
+
+##### 2. Come up with another approach that will give you the same output as `not_cancelled %>% count(dest)` and `not_cancelled %>% count(tailnum, wt = distance)` (without using count()).  
+
+I did these earlier in the lesson of this exercise :)
+
+```{r}
+not_cancelled <- flights %>%
+  filter(!is.na(dep_time))
+
+not_cancelled %>%
+  count(dest) 
+
+## is equivalent to
+
+not_cancelled %>%
+  group_by(dest) %>%
+  summarise(n = n())
+
+not_cancelled %>%
+  count(tailnum, wt = distance)
+
+## is equivalent to
+not_cancelled %>%
+  group_by(tailnum) %>%
+  summarise(n = sum(distance))
+```
+
+##### 3. Our definition of cancelled flights `(is.na(dep_delay) | is.na(arr_delay) )` is slightly suboptimal. Why? Which is the most important column?  
+
+This is because one of the filtering condition catches all cancelled flights for both flights, which is `dep_delay`, because whenever `dep_delay` is NA, `arr_delay` would always be empty, the reverse isn't always true. I tested this earlier in exercise 1.
+
+##### 4. Look at the number of cancelled flights per day. Is there a pattern? Is the proportion of cancelled flights related to the average delay?  
+
+```{r}
+cancelled_per_day <- flights %>%
+  select(year, month, day, time_hour, dep_delay, arr_delay) %>%
+  group_by(year, month, day) %>%
+  mutate(cancelled = is.na(dep_delay),
+         delayed = arr_delay > 0 | dep_delay > 0) %>%
+  summarise(number_of_flights = n(),
+            number_of_cancelled = sum(cancelled),
+            proportion_cancelled = mean(cancelled),
+            average_dep_delay = mean(dep_delay, na.rm = TRUE),
+            average_arr_delay = mean(arr_delay, na.rm = TRUE),
+            proportion_delayed = mean(delayed, na.rm = TRUE)) 
+
+ggplot(data = cancelled_per_day, 
+       mapping = aes(x = number_of_flights, y = number_of_cancelled)) +
+  geom_point(position=position_jitter(width = .5, height = .5)) +
+  geom_smooth(se = FALSE, method = "loess") +
+  xlab("Flights per day") +
+  ylab("Cancelled flights per day") +
+  theme_minimal()
+```
+
+From the above, plotting the number of cancelled flights per day against the number of flights each day, generally, I see that the higher the number of flights there were that day, the higher the number of cancelled flights. So there's a positive relation between the number of cancelled flights and the number of flights that day. This is more obvious when I remove days with fewer flights
+
+```{r}
+cancelled_per_day %>%
+  filter(number_of_flights >= 700) %>%
+  ggplot(mapping = aes(x = number_of_flights, y = number_of_cancelled)) +
+  geom_point(position = position_jitter(width=1,height=.5), alpha = 1/4) +
+  geom_smooth(method = "loess")
+```
+
+Now there's rarely a cancelled flight when the number of flights that day are less than 700.  
+To answer the question if the proportion of cancelled flights per day is related to the average delay.  
+
+```{r}
+delays_by_day <- flights %>%
+  select(year, month, day, dep_delay, arr_delay) %>%
+  group_by(year, month, day) %>%
+  mutate(cancelled = is.na(dep_delay)) %>%
+  summarise(
+    count = n(),
+    prop_cancelled = mean(cancelled, na.rm = TRUE), 
+    dep_average = mean(dep_delay, na.rm = TRUE),
+    arr_average = mean(arr_delay, na.rm = TRUE))
+
+delays_by_day %>%
+  ggplot(data = ., mapping = aes(x = dep_average, y = prop_cancelled, colour = arr_average)) +
+  geom_point(position = position_jitter(width = 1)) +
+  scale_colour_gradient(low = "white", high = "black") +
+  labs(y = "Proportion cancelled", x = "Average departure delay", colour = "Average Arrivals")
+```
+
+We can see that there is a positive relationship between the average delay per day and the proportion of cancelled flights per day, so on days with higher delays (departure or arrival), there's higher proportion of cancelled flights.  
+
+##### 5. Which carrier has the worst delays? Challenge: can you disentangle the effects of bad airports vs. bad carriers? Why/why not? (Hint: think about flights %>% group_by(carrier, dest) %>% summarise(n()))   
+
+```{r}
+flights_with_fullnames = merge(airlines, flights)
+flights_with_fullnames %>%
+  group_by(name) %>%
+  summarise(count = n(), 
+            delays = sum(dep_delay, na.rm = TRUE),
+            delay_prop = count/delays) %>%
+  arrange(desc(delay_prop))
+```
+
+From the above, I see that carriers with high number of flights have a higher accumulative amount of delay. Which wouldn't be fair on them to compare them with others on that. A better view is the `delay_prop` variable there, and from there, I see that flights like "US Airways, Hawaiian Airlines, Alaska Airlines" perform worse on the amount of delay per number of flights. Also; 
+
+```{r}
+# which airports has the worst delays
+airport_names <- airports %>%
+  filter(faa %in% c("LGA", "JFK", "EWR")) %>%
+  select(faa, name) %>%
+  rename(origin = faa, airport = name)
+
+flights_with_fullnames <- merge(airport_names, flights_with_fullnames)
+amount_of_delay = sum(flights_with_fullnames$dep_delay, na.rm = T)
+flights_with_fullnames %>%
+  group_by(airport) %>%
+  summarise(count = n(),
+            delay = sum(dep_delay, na.rm = TRUE),
+            proportion = count/delay) %>%
+  arrange(desc(proportion))
+```
+
+From the above, I see that *La Guardia* airport has the worse delay per minute flight. This is understandable because they had most of the flights in the dataset, which would cause more accumulative delays, which would mean a bigger proportion of the total delay.  
+
+##### 6. What does the sort argument to count() do. When might you use it?  
+
+Simple example  
+
+```{r}
+flights %>%
+  group_by(tailnum) %>%
+  count(sort = TRUE)
+```
+
+The `sort` argument in count sorts the result of count in descending order of `n`. I'll use it if I want the result of `count` to be ordered in decreasing order.  
+
+
