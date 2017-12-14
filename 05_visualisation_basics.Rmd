@@ -1,0 +1,43 @@
+---
+title: "Visualisation Basics II"
+author: "Chidi"
+date: "12/14/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE, warning=FALSE, echo=TRUE, message=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  comment = "#>",
+  collapse = TRUE,
+  cache = TRUE)
+```
+
+### Introduction  
+
+**Statistical transformations** (stats) allows us plot summaries of the data, and are useful for visualisations like the histogram.  **Position adjustments** helps handle overlapping objects. **Coordinate systems** control how x and y map to position on the plot.
+
+### Statistical Transformations  
+
+```{r include = FALSE, warning = FALSE}
+library(tidyverse)
+library(nycflights13)
+```
+
+
+```{r}
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut))
+```
+
+To make a plot, charts like histogram, bar charts, frequency polygons, etc bin your data and then plot bin counts. Smooters fit a model on the data and then plot predictions from the model. Boxplots compute a robust summary of the distribution which it displays in a specially formatted box.  For each geom we use, we can check the `stat` it uses using the `stat` argument of the geom (check the geom's doc - `?geom_bar`), and we can set for the one we want. The *Computed variables* section for these stat functions tells how it computes the stats it uses, and provides good pointers on the stats used by the geom function. We can create the geom functions of statistical transformation graphs using their direct stat functions, for example, I can recreate the bar chat above using the `stat_count`, note that the one I made above used the `count` stat, I could still use the `prop` stat, which would compute groupwise proportions  
+
+```{r}
+ggplot(diamonds) +
+  stat_count(mapping = aes(x = cut))
+```
+
+This works because every geom has a default stat, and every stat has a default geom. This means we can plot graphs with statistical transformations without having to worry about the stats used, however, there're reasons why it may be important to specify the kind of stat we want;
+
+* We might want to override the default stat or geom.  
+* 
