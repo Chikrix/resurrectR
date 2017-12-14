@@ -39,5 +39,46 @@ ggplot(diamonds) +
 
 This works because every geom has a default stat, and every stat has a default geom. This means we can plot graphs with statistical transformations without having to worry about the stats used, however, there're reasons why it may be important to specify the kind of stat we want;
 
-* We might want to override the default stat or geom.  
-* 
+* We might want to override the default stat or geom. for example, say I want to create a bar chart, where I have a category and the size of the category (note, not the computed frequency)  
+
+```{r}
+demo <- tribble(
+  ~cut,        ~freq,
+  "Fair",      1610,
+  "Good",      4960,
+  "Very Good", 12082,
+  "Premium",   13791,
+  "Ideal",      21551
+)
+
+ggplot(data = demo) +
+  geom_bar(mapping = aes(x = cut, y = freq), stat = "identity")
+```
+
+The above plot shows a bar chart, however, note that the `cut` axis is the one we provide, this is the most common way bar charts are thought of, unlike the earlier example where the count was computed and we didn't have to provide `freq`  
+
+* You might want to override the default mapping from transformed variables to aestistics. For example, I might want a bar chart to show proportions instead of count. Example;  
+
+```{r}
+ggplot(diamonds) +
+  geom_bar(mapping = aes(x = cut, y = ..prop.., group = 1))
+```
+
+* I might want to draw more attention to the statistical transformation. For example, I might want to use `stat_summary()`, which would summarise the y values for each unique x value.  
+
+```{r}
+ggplot(diamonds) +
+  stat_summary(mapping = aes(x = cut, y = depth),
+               fun.ymin = min,
+               fun.ymax = max,
+               fun.y = median)
+
+diamonds %>%
+  group_by(cut) %>%
+  summarise(minimum = min(depth, na.rm = TRUE),
+            maxinum = max(depth, na.rm = TRUE),
+            average = median(depth, na.rm = TRUE))
+```
+
+What the plot does is plot the summary I made below for each cut group. That is awesome. ggplot2 provides over 20 `stat` functions we can use. Use the data visualisation cheatsheet to also learn more, also check the doc for each to learn more, eg `?stat_bin`  
+
