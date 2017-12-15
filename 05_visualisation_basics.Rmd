@@ -71,7 +71,7 @@ ggplot(diamonds) +
   stat_summary(mapping = aes(x = cut, y = depth),
                fun.ymin = min,
                fun.ymax = max,
-               fun.y = median)
+               fun.y = median, geom = "pointrange")
 
 diamonds %>%
   group_by(cut) %>%
@@ -82,3 +82,65 @@ diamonds %>%
 
 What the plot does is plot the summary I made below for each cut group. That is awesome. ggplot2 provides over 20 `stat` functions we can use. Use the data visualisation cheatsheet to also learn more, also check the doc for each to learn more, eg `?stat_bin`  
 
+### Exercises  
+
+##### 1. What is the default geom associated with stat_summary()? How could you rewrite the previous plot to use that geom function instead of the stat function?  
+
+The default geom associated with `stat_summary()` is `pointrange`. To rewrite the plot above.  
+
+```{r}
+ggplot(diamonds, mapping = aes(cut, depth)) +
+  geom_pointrange(stat = "summary",
+                  fun.ymin = min, 
+                  fun.ymax = max,
+                  fun.y = mean)
+```
+
+##### 2. What does geom_col() do? How is it different to geom_bar()?  
+
+```{r}
+diamonds %>%
+  group_by(cut) %>%
+  summarise(
+    count = n(),
+    minimum = min(depth, na.rm = TRUE),
+    maxinum = max(depth, na.rm = TRUE),
+    average = median(depth, na.rm = TRUE)) %>%
+  print(.) %>% 
+  ggplot(., aes(x = cut, y = average)) +
+  geom_col()
+```
+
+The `geom_col` creates a bar chart with the x and y variables we provide. Unlike `geom_bar` whose y axis is a statistical transformation of the number of cases of x, in `geom_col` the height of the bars is the actual values in the dataset. 
+
+##### 3. Most geoms and stats come in pairs that are almost always used in concert. Read through the documentation and make a list of all the pairs. What do they have in common?  
+
+See [ggplot2 documentation](http://ggplot2.tidyverse.org/reference/) 
+
+##### 4. What variables does stat_smooth() compute? What parameters control its behaviour?
+
+```{r}
+ggplot(diamonds, mapping = aes(carat, price)) +
+  geom_point() +
+  stat_smooth()
+```
+
+Variables important for `stat_smooth` are the same `geom_smooth`, these includes, x, y, ymin, ymax, se. parameters that control its behavior are `method`.  
+
+##### 5. In our proportion bar chart, we need to set group = 1. Why? In other words what is the problem with these two graphs?  
+
+```{r}
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, y = ..prop..))
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, fill = color, y = ..prop..))
+```
+
+I think the group helps us know how the x values are grouped relative to the y value, kind of helps us add some dimension to the plot. So by setting the group to be 1, we say we want one bar per category, by setting the group to a categorical variable, we're saying we want that number of group categories on the x axis for each of the category. The intended plot may be; 
+
+```{r}
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, y = ..prop.., group = 1))
+ggplot(data = diamonds) + 
+  geom_bar(mapping = aes(x = cut, fill = color, y = ..prop.., group = color), position = "dodge")
+```
