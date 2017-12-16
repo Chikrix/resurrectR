@@ -251,10 +251,4 @@ plot_grid(
 
 ##### 4. What’s the default position adjustment for geom_boxplot()? Create a visualisation of the mpg dataset that demonstrates it.
 
-The default position adjustment of `geom_boxplot()` is *"dodge"*
-
-```{r}
-ggplot(data = diamonds, aes(carat, price)) +
-  geom_boxplot()
-```
-
+The default position adjustment of `geom_boxplot()` is *"dodge"*. This can be found in the documentation.  
