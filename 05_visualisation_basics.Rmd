@@ -338,3 +338,20 @@ no_coord +
 
 The plot tells me there's some linear relationship between `highway` and `city` variables in the mpg dataset. `coord_fixed` sets an aspect ratio for the x and y axis of the plot. The `geom_abline` adds a slope to the plot.
 
+
+### Layered Grammar of Graphics
+
+Wrapping all the above together, a template for producing ggplot graphics is the following;
+
+```
+ggplot(data = <DATA>) +
+  <GEOM_FUNCTION>(
+    mapping = aes(<MAPPINGS>),
+    stat = <STAT>,
+    position = "<POSITION>"
+  ) +
+  <COORDINATE_FUNCTION> +
+  <FACET_FUNCTION>
+  
+```
+
