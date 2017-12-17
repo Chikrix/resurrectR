@@ -23,6 +23,7 @@ knitr::opts_chunk$set(
 library(tidyverse)
 library(nycflights13)
 library(cowplot)
+library(maps)
 ```
 
 ```{r}
@@ -204,8 +205,6 @@ ggplot(mpg) +
   geom_jitter(mapping = aes(x = displ, y = hwy))
 ```
 
-
-  
 ### Exercises  
 
 ##### 1. What is the problem with this plot? How could you improve it? 
@@ -252,3 +251,49 @@ plot_grid(
 ##### 4. What’s the default position adjustment for geom_boxplot()? Create a visualisation of the mpg dataset that demonstrates it.
 
 The default position adjustment of `geom_boxplot()` is *"dodge"*. This can be found in the documentation.  
+
+### Coordinate systems  
+
+ggplot2 has several coordinate systems. The most common being the cartesian coordinate system, where the x and y positions act independently to determine the location of each point.  Other coordinate systems that are occassionally useful includes;  
+
+* `coord_flip()`: This switches the x and y axis, which can be useful especially when we have long variable names. For example;
+
+```{r}
+plot_grid(
+  ggplot(data = mpg, mapping = aes(x = class, y = hwy)) + 
+    geom_boxplot(),
+  ggplot(data = mpg, mapping = aes(x = class, y = hwy)) + 
+    geom_boxplot() + 
+    coord_flip())
+```
+
+In the above example, note the names of the label for the x axis on the first plot, and y axis on the second plot (due to flipping the coordinates)
+
+* `coord_quickmap()`: Sets the aspect ratio correctly for maps. Which can be very useful when plotting spatial data with ggplot2.
+
+```{r}
+nz <- map_data("nz")
+plot_grid(
+  ggplot(nz, aes(long, lat, group = group)) + 
+    geom_polygon(fill = "white", colour = "black"),
+  ggplot(nz, aes(long, lat, group = group)) + 
+    geom_polygon(fill = "white", colour = "black") +
+    coord_quickmap()
+)
+```
+
+* `coord_polar`: This reveals an interesting connection beteen a barchart and a coxcomb chart.  
+
+```{r}
+bar_chart <- ggplot(data = diamonds) + 
+  geom_bar(
+    mapping = aes(x = cut, fill = cut), 
+    show.legend = FALSE,
+    width = 1) + 
+  theme(aspect.ratio = 1) +
+  labs(x = NULL, y = NULL)
+
+plot_grid(bar_chart + coord_flip(), bar_chart + coord_polar())
+```
+
+### Exercises  
