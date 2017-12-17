@@ -24,6 +24,7 @@ library(tidyverse)
 library(nycflights13)
 library(cowplot)
 library(maps)
+library(mapproj)
 ```
 
 ```{r}
@@ -297,3 +298,43 @@ plot_grid(bar_chart + coord_flip(), bar_chart + coord_polar())
 ```
 
 ### Exercises  
+
+##### 1. Turn a stacked bar chart into a pie chart using coord_polar().
+
+```{r}
+stacked_barchart <- ggplot(diamonds, mapping = aes(x = factor(1), fill = cut)) +
+  geom_bar(width = 1)
+stacked_barchart
+stacked_barchart + coord_polar(theta = "y")
+
+stacked_multiple <- ggplot(diamonds, mapping = aes(x = clarity, fill = cut)) +
+  geom_bar(position = "fill")
+stacked_multiple
+stacked_multiple + coord_polar()
+stacked_multiple + coord_polar(theta = "y")
+```
+
+I can play with variations of the above to achieve different variations, in particular changing the position argument type of `geom_bar`, adding or removing `theta = "y"` argument.  
+
+##### 2. What does labs() do? Read the documentation.
+
+`labs` is used to modify a ggplot axis, legend, or plot labels. Like the label of the x and y axis, the legend, plot title and subtitle. 
+
+##### 3. What’s the difference between coord_quickmap() and coord_map()?
+
+`?coord_map`  
+
+##### 4. What does the plot below tell you about the relationship between city and highway mpg? Why is coord_fixed() important? What does geom_abline() do?
+
+```{r}
+no_coord <- ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) +
+  geom_point() + 
+  geom_abline() 
+
+no_coord
+no_coord +
+  coord_fixed()
+```
+
+The plot tells me there's some linear relationship between `highway` and `city` variables in the mpg dataset. `coord_fixed` sets an aspect ratio for the x and y axis of the plot. The `geom_abline` adds a slope to the plot.
+
