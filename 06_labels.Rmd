@@ -1,0 +1,55 @@
+---
+title: "Ggplot2 Labels"
+author: "Chidi"
+date: "12/17/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE, warning=FALSE, echo=FALSE, message=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  comment = "#>",
+  collapse = TRUE,
+  cache = TRUE)
+```
+
+### Introduction                                                                              
+
+Labels helps improve our visualisations so they're more readable and understandable. 
+
+```{r warning=FALSE, echo=TRUE}
+library(tidyverse)
+library(nycflights13)
+library(patchwork)
+```
+
+With ggplot2, we can add labels using the `labs()` function.  
+
+```{r}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point( aes(colour = class)) +
+  geom_smooth(se = FALSE) +
+  labs(title = "Fuel efficiency generally decreases with engine size",
+       subtitle = "Two seaters (sports cars) are an exception because of their light weight",
+       caption = "Data from Fueleconomy.gov",
+       x = "Engine displacement",
+       y = "Highway fuel economy",
+       colour = "Car type")
+```
+
+I can also use mathematical equations as labels, to do this, I'll just need to switch from "" to `quote()`. Check `?plotmath` for more  
+
+```{r}
+df <- tibble(
+  x = runif(10),
+  y = runif(10)
+)
+
+ggplot(df, aes(x, y)) +
+  geom_point() +
+  labs(
+    x = quote(sum(x[i] ^ 2, i == 1, n)),
+    y = quote(alpha + beta + frac(delta, theta))
+  )
+```
+
