@@ -1,0 +1,130 @@
+---
+title: "Other Single Table Verbs"
+author: "Chidi"
+date: "12/18/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE, warning=FALSE, echo=FALSE, message=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  comment = "#>",
+  collapse = TRUE,
+  cache = TRUE)
+```
+
+### Introduction
+
+Aside from `mutate`, `summarise`, `filter`, `group_by` (see my *04_manipulation_basics.Rmd* file), there're other verbs that are very important to know for a start and have in one's toolbox. 
+
+```{r warning = FALSE, echo = TRUE}
+library(tidyverse)
+library(nycflights13)
+```
+
+### Select  
+
+Most timess, we work with datasets that have a large number of variables, which may or may not be necessary for our purpose. `select()`, as the name suggests, lets us select only the variables we need for our purpose. In dplyr, selects also has various helper functions that improves how efficient we can select, like `starts_with(x)`, `ends_with(x)`, `contains(x)`, `matches(x.y)`, and selections like `a:e`, which would select all variables between `a` to `e`. Example;
+
+```{r}
+flights %>%
+  select(year:day, ends_with("delay"))
+```
+
+To remove variables from a selection, add `-` in front of the expression.  
+
+```{r}
+flights %>%
+  select(-ends_with("delay"), -(year:day), -contains("dep"))
+```
+
+Say I want to move variables to the beginning, I'll use the `everything()` verb  
+
+```{r}
+flights %>%
+  select(contains("dep"), everything())
+```
+
+### Renaming  
+
+`rename`, as the name suggests, is used to rename variables in the format `rename(new_name = old_name)`
+
+```{r}
+flights %>%
+  rename(arrival_delay = arr_delay) 
+```
+
+We can also rename with `select`, which can save us a line in case we want to select and rename too  
+
+```{r}
+flights %>%
+  select(year:day, tail_num = tailnum)
+```
+
+### Transmute  
+
+`transmute` is like `mutate`, being that it lets us create new variables from functions of the old one, the difference here being that, while `mutate` would return a dataset composed of variables of old one and the newly created ones, `transmute` would return a dataframe of only the newly created variables.  
+
+```{r}
+flights %>%
+  transmute(departed_earlier = dep_delay < 0)
+```
+
+### Arrange  
+
+`arrange` allows us change the order of rows. To put a column in descending order, use `desc()`  
+
+```{r}
+flights %>%
+  arrange(desc(dep_delay))
+
+flights %>%
+  arrange(year, month, day)
+```
+
+### Distinct  
+
+`distinct` removes duplicates from a dataset, the result is then ordered by first occurence in the dataset  
+
+```{r}
+flights %>%
+  distinct(carrier, flight)
+```
+
+### Sample  
+
+When working with large datasets, we may want to take a random sample of the data set, this is what `sample_n()` (selects the same number of observations for each group), `sample_frac()` (selects the same proportion) does. 
+
+```{r}
+flight_groups <- flights %>%
+  group_by(dest) %>%
+  filter(n() > 1000)
+
+# 100 rows
+flight_groups %>%
+  sample_n(100) %>%
+  filter(dest == "IAH") %>%
+  dim
+
+flight_groups %>%
+  sample_frac(0.01) %>%
+  filter(dest == "IAH") %>%
+  dim
+```
+
+### Slice rows
+
+`slice()` allows us pick observations by positions or by group. `head()` and `tail()` are slicing types for just the begining and the ending of the dataset. 
+
+```{r}
+flights %>%
+  group_by(dest) %>%
+  slice(1:5)
+
+flights %>%
+  head
+
+flights %>%
+  tail
+```
+
