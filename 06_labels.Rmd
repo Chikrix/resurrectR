@@ -53,3 +53,57 @@ ggplot(df, aes(x, y)) +
   )
 ```
 
+### Exercises  
+
+##### 1. Create one plot on the fuel economy data with customised title, subtitle, caption, x, y, and colour labels.  
+
+```{r}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_jitter(aes(color = fl)) +
+  labs(
+    title = "Fuel efficiency decreases with engine size",
+    subtitle = "Grouped by fuel type",
+    caption = "Fuel economy data (fueleconomy.gov)",
+    y = "Highway miles per gallon",
+    x = "Engine displacement",
+    colour = "Fuel type"
+  )
+```
+
+##### 2. The geom_smooth() is somewhat misleading because the hwy for large engines is skewed upwards due to the inclusion of lightweight sports cars with big engines. Use your modelling tools to fit and display a better model.
+
+```{r}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_jitter(aes(color = class)) +
+  labs(
+    title = "Fuel efficiency decreases with engine size",
+    subtitle = "Grouped by fuel type",
+    caption = "Fuel economy data (fueleconomy.gov)",
+    y = "Highway miles per gallon",
+    x = "Engine size",
+    colour = "Car type") +
+  geom_smooth()
+```
+
+Note that the light weight sports cars referred here are the *2seater* car types. To fix this, I'll fit a smooth geom group by group, or I'll remove the *2seater* cars from the data set and fit a model.  
+
+```{r warning=FALSE}
+ggplot(mpg, aes(displ, hwy, colour = class)) +
+  geom_jitter() +
+  labs(
+    title = "Fuel efficiency decreases with engine size",
+    y = "Highway miles per gallon",
+    x = "Engine size",
+    colour = "Car type") +
+  geom_smooth(aes(group = class), se = FALSE, method = "lm") +
+ggplot(filter(mpg,  class != "2seater"), aes(displ, hwy)) +
+  geom_jitter(aes(colour = class)) +
+  labs(
+    title = "Fuel efficiency decreases with engine size",
+    y = "Highway miles per gallon",
+    x = "Engine size",
+    colour = "Car type") +
+  geom_smooth(se = FALSE, method = "lm")
+```
+
+##### 3. Take an exploratory graphic that you’ve created in the last month, and add informative titles to make it easier for others to understand.
