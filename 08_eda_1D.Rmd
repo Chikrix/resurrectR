@@ -1,0 +1,139 @@
+---
+title: "Exploratory Data Analysis 1"
+author: "Chidi"
+date: "12/29/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE, warning=FALSE, echo=FALSE, message=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  comment = "#>",
+  collapse = TRUE,
+  cache = TRUE)
+```
+
+### Introduction  
+
+EDA is a useful technique that lets us explore our data using visialisations, transformations, and modelling. EDA helps us   
+
+* Generate questions about our data.  
+* Search for answers by visualisations, transforming, and modelling our data.  
+* Use what we learn to refine our questions and/or generate new questions.  
+
+EDA is an important part of any analysis, even if we've been given questions to explore and commnicate the result, we'll still need to investigate the quality of the data. Data cleaning is an application of EDA, because we need to investigate whether the data meets expectations. Data cleaning usually involves all aspects of EDA (transformation, visualisations and modelling)  
+
+```{r warning = FALSE, echo = TRUE, message = FALSE}
+library(nycflights13)
+library(tidyverse)
+library(patchwork)
+```
+
+### 1D EDA - `dylyr::count`
+
+When doing EDA, its important to keep our mind open to what the data has to tell. Before we can start combining variables together, its important to look at a variable very well first. Dpylr's `count()` can be a handy function when doing this  
+
+```{r}
+flights %>% 
+  count(carrier)
+```
+
+The above is shorthand for `flights %>% group_by(carrier) %>% summarise(n = n())`. `count` has two parameters; these includes `sort` and `wt`. `wt` can be useful as it performs the sum on another variable grouped by the initial variable;
+
+```{r}
+flights %>%
+  count(carrier, wt = distance)
+```
+
+What the above does is sum all distance for each carrier group. Without the `wt` argument, *n* would be the count of each carrier group.
+
+We can also apply `count()` on an expression, for example;
+
+```{r}
+flights %>%
+  count(is.na(dep_delay))
+
+flights %>%
+  count(dep_missing = is.na(dep_time),
+        arr_missing = is.na(arr_time))
+```
+
+This can be a useful technique to make quick summaries on variables as seen above. Also, we can combine `count()` with `cut_` functions from `ggplot2` to compute histograms;
+
+```{r}
+# 5 bins with equal widths
+flights %>%
+  count(cut_interval(arr_delay, 5))
+
+# 5 bins with approximately equal number of points
+flights %>%
+  count(cut_number(arr_delay, 5))
+
+# Hourly bins 
+flights %>%
+  count(cut_width(arr_delay, 60, boundary = 0))
+```
+
+### Questions 
+
+> “Far better an approximate answer to the right question, which is often vague, than an exact answer to the wrong question, which can always be made precise.” — John Tukey  
+
+The goal when doing EDA should be to develop a better understanding of the data. To do this, the best way is to use questions as a guide for investigating the data. When we ask questions, the question focuses our attention on specific portions of the data, and from those portions of the data and the question, we can decide on the transformations, graphs or models to make.  
+
+The key to asking quality questions is by asking lots of questions. There're no rules on which questions to ask, however, two kinds of questions that are always useful for making discoveries within our data can be generalised as;  
+
+> 1. What type of variation occurs within my variables?  
+> 2. What kind of covariation occurs within my variables?
+
+### Variation
+
+Variation is the likelihood of the values of a variable to change from measurement to measurement. A value is the state of a variable when it is measured. We can see variation in real life, like when we measure any continuous variable (the value), we can get different results. Even categorical variables can have variations, like if we measure the eye colours of different people. Each variable has its own pattern of variation, which can reveal something interesting. The best way to understand the pattern of variation in a dataset is to visualise the distribution of the variable's values. 
+
+#### Visualising distributions  
+
+How we visualise the distribution of a variable depends on whether the variable is categorical or continuous. **Categorical variables** only take a small set of values. In R, they're usually saved as factors or character vectors. We usually use a barchat to visualise the distribution of a categorical variable.  
+
+```{r}
+ggplot(diamonds) +
+  geom_bar(mapping = aes(x = cut))
+```
+
+A variable is **continuous** if it can take an infinite set of ordered values. Examples are numbers and datetime. We'll usually use a histogram to visualise continuous variables;
+
+```{r}
+ggplot(diamonds) +
+  geom_histogram(mapping = aes(x = carat), binwidth = 0.2)
+```
+
+Note that we can use our `count` variables to compute things that are plotted here for the categorical variable and continuous variables;
+
+```{r}
+diamonds %>%
+  count(cut)
+
+diamonds %>%
+  count(cut_width(carat, 0.2))
+```
+
+A histogram divides the x axis into equally spaced bins and uses the height of each bar to show the number of observations in that bin. Its a good practice to always practice with different `binwidths` when working with histograms as they can reveal different distribution patterns. 
+
+If we wish to overlay multiple histograms on the same plot, its recommended to use `geom_freqpoly()` instead of `geom_histogram()`. `geom_freqpoly` does the same calculation as `geom_histogram`, but draws its own with lines instead of bars.  
+
+```{r}
+# local function just to allow me compose plots together with the same dataframe, since I'm piping
+drawplots <- function(df) {
+  ggplot(df) +
+    geom_histogram(mapping = aes(x = carat, fill = cut), position = "dodge", binwidth = 0.1) +
+  ggplot(df) +
+    geom_freqpoly(mapping = aes(x = carat, colour = cut), binwidth = 0.1) +
+  plot_layout(ncol = 1)
+}
+
+diamonds %>%
+  filter(carat < 3) %>%
+  drawplots(.)
+```
+
+The key to asking good follow up questions is to use our curiousity, and our skepticism (like how could what I'm seeing be misleading?). 
+
+
