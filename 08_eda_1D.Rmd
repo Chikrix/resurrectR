@@ -135,5 +135,24 @@ diamonds %>%
 ```
 
 The key to asking good follow up questions is to use our curiousity, and our skepticism (like how could what I'm seeing be misleading?). 
+When we look at histograms and barchats, we can start by asking ourselves, what values are most common and why? Which ones are rare and why? Is this observation expected? Are there unusual patterns? And what could be the reason for that? Clusters usually suggests subgroups exists in our data, and to understand subgroups, we ask ourselves questions to know how the observations within each cluster relates to each other, how the observations between separate clusters differs from each other? Why? What variables can help explain/describe these clusters and the observed differences? Why might the appearance of clusters be misleading?
 
+### Unusual Observations  
+
+Outliers are data points that are unusual, points that doesn't fit the pattern. Several things can cause outliers, like entry errors, or an important suggestion from the normal pattern which may be useful. In general, its good to look out for outliers, and discern what could be the cause of the outlier to know how best to handle them. Its good practice to repeat one's analysis with and without outliers. If they have minimal effect and we can't figure out why they're there, its reasonable to replace them with missing variables, else, we have to keep them and figure out why they're there. Sometimes, especially when we have lots of data points to plot for a variable, like in a histogram, outliers may not be seen easily, so we have to zoom in on it. We can do this using coord_cartesian(). Example;
+
+```{r}
+ggplot(diamonds) +
+  geom_histogram(mapping = aes(x = y), binwidth = 0.5) +
+  ggtitle("Main plot") +
+ggplot(diamonds) +
+  geom_histogram(mapping = aes(x = y), binwidth = 0.5) +
+  coord_cartesian(ylim = 0:50) +
+  ggtitle("Zoomed in on the Y-axis") +
+plot_layout(ncol = 2)
+```
+
+Notice the heights on both plots above, the one on the left is 0 to 120k, the one on the right is 0 to 60. Now I can see the values of y with smaller values lies around 30's and 50's. I can do the same for the y axis.
+
+# Exercises  
 
