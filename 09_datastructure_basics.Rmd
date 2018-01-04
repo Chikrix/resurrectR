@@ -1,0 +1,79 @@
+---
+title: "Data structure basics"
+author: "Chidi"
+date: "1/4/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE, warning=FALSE, echo=FALSE, message=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  comment = "#>",
+  collapse = TRUE,
+  cache = TRUE)
+```
+
+### Introduction  
+
+Vectors are related data organised in data frames and tibbles. They can be *atomic* or *augumented*. 
+
+```{r warning = FALSE, echo = TRUE, message = FALSE}
+library(tidyverse)
+```
+
+#### Atomic Vectors  
+
+Atomic vectors are the simplest data structures upon which other structures are built in R. There are 4 atomic vectors important to data analysis in R  
+
+* logical  - `TRUE` or `FALSE`, `<lgl>` in tibble 
+* integer - integers, `<int>` in tibble  
+* double - real numbers, `<dbl>` in tibble  
+* character - strings, `<chr>` in tibble   
+
+Vectors can contain *NA* values, which are known as missing values. *integer* and *double* vectors are collectively known as *numeric vectors*. We can create atomic vectors using `c()` function. 
+
+```{r}
+logical_vector <- c(TRUE, FALSE, FALSE)
+integer_vector <- c(1L, 2L, 3L, NA)
+double_vector <- c(1, 2, 3)
+double_vector2 <- c(1.5, 0.2, 3, NA)
+character_vector <- c("chi", "di", "eb", "re")
+typeof(logical_vector)
+typeof(integer_vector)
+typeof(double_vector)
+typeof(double_vector2)
+typeof(character_vector)
+```
+
+#### Augumented Vectors  
+
+Augumented vectors are atomic vectors with additional metadata. There're 4 important `augumented` vectors;  
+
+* factors `<fct>` - These are represented by categorical characters, are there're a fixed number of these characters, known together as the level of the factor.  
+* ordered factors `<ord>` - These are like factors above, but the levels have an intrinsic ordering, like we can say this one is greater or less than the other, etc.    
+* dates `<dt>` - A date record  
+* date-time `<dttm>` - Also known as **POSIXct**, represents a date and time vector  
+
+Related vectors (augumented or atomic) are can be grouped together to form a data frame or tibble.  
+
+```{r}
+(my_tibble <- tibble(x = c(1,9,5),
+                    y = c(TRUE, TRUE, FALSE),
+                    z = c("apple", "pear", "banana")))
+
+(my_tibble2 <- tribble( # notice the name "tribble" not "tibble", but it's used to create a "tibble"
+  ~x, ~y, ~z,
+  1, TRUE, "apple",
+  9, TRUE, "pear",
+  5, FALSE, "banana"
+))
+```
+
+To get the variable types of a data set, we can use `purrr::map_chr()` to apply a type sum (type summary) to each variable.  
+
+```{r}
+type_sum(diamonds)
+map_chr(diamonds, type_sum)
+```
+
+
