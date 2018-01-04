@@ -156,3 +156,147 @@ Notice the heights on both plots above, the one on the left is 0 to 120k, the on
 
 # Exercises  
 
+##### 1. Explore the distribution of each of the x, y, and z variables in diamonds. What do you learn? Think about a diamond and how you might decide which dimension is the length, width, and depth.
+
+```{r}
+# ======= What is the distribution of the x variable =========
+
+ggplot(data = diamonds, mapping = aes(x = x)) +
+  geom_histogram(binwidth = 0.2) +
+  ggtitle(label = "A") + 
+ggplot(data = diamonds, mapping = aes(x = x)) +
+  geom_histogram(binwidth = 0.2) +
+  coord_cartesian(ylim = c(0,10), xlim = c(-0.75, 1)) + 
+  ggtitle(label = "B") + 
+diamonds %>%
+  select(x, y, z) %>%
+  filter(x > 0) %>%
+  ggplot(mapping = aes(x = x)) +
+  geom_histogram(binwidth = 0.2) +
+  coord_cartesian(xlim = c(8.9, 11), ylim = c(0:20)) + 
+  ggtitle(label = "D") + 
+diamonds %>%
+  select(x, y, z) %>%
+  filter(x > 0) %>%
+  ggplot(mapping = aes(x = x)) +
+  geom_histogram(binwidth = 0.2) +
+  ggtitle(label = "C") + 
+plot_layout(nrow = 2)
+```
+
+Looking at the distribution of the `x` variable, from the plot on the left, I see that some points are outliers, like there seem to be few points around 0, on the right, I zoomed into this area and saw that about 8 data points have x of zero, so what could be their possible `y` and `z` values  
+
+```{r}
+diamonds %>%
+  select(x, y, z) %>%
+  filter(x <= 0) 
+```
+
+Looking at the section of the plot above, I see that those variables are usually 0, which means they were non existent, so those data points are probably best removed, one point, has a y value of 6.62, but I think this can also be removed because its x and y are 0. So this means, I can remove those points from the plot, as seen in plot C above. Same thing can be said for the bins on the far right (between 9 and 11), which I zoomed into in plot D above, values from 9.5 to ~11 seems like an error as they're too far off,
+
+```{r}
+diamonds %>%
+  select(x, y, z) %>%
+  filter(x >= 9.5) 
+```
+
+But looking at the table above, I think they're valid points and very much part of the data. However, I'm curious as to why there're so few of them, I think its because they're bigger, and the bigger, the rarer, which is kind of what the x distribution shows, that as diamonds with longer widths are rare.  
+
+To look at all variables x , y and z distributions, I'll exempt the ones I know shouldn't be there  
+
+```{r}
+# I could optimise how I use this with patchwork package, instead of repeating this, could be good for a # contribution 
+plt <- function(df) {
+  df %>%
+    gather(dimension, dimension_value, x:z) %>%
+    ggplot(mapping = aes(x = dimension_value, colour = dimension)) +
+    geom_freqpoly(binwidth = 0.2)
+}
+
+diamonds %>%
+  select(x, y, z) %>%
+  filter(x > 0 | y > 0) %>%
+  plt(.) 
+```
+
+There seems to be outliers here, first, I notice my initial observation, that the bigger the dimension, the rarer, that means those ones that are big here, indicated by the flat line in the plot needs further checking. Another thing I notice is that I can't seem to find the line for x, the red line, it's completely masked by the y variable, suggestion that the x and y are usually almost the same, this seems to suggest to me that the points are usually the same for the x and y variables, except on few occassions. If that is the case, why are there data points of y greater than x, like I see that the maximum x variable is 10.74 and y is 58.9, if majority of the data sets seems to suggest that x is always the same of close to y, then y the difference? Are those ones better diamond? More expensive, or what? Also, does dimension determine price?
+
+```{r cache = TRUE}
+## Does dimension determine price
+diamonds_flattened <- diamonds %>%
+  filter(x > 0) %>% # I've already established that x < 0 is wrong
+  gather(dimen_categories, dimension_values, x:z)
+
+diamonds_no_outliers <- diamonds %>%
+  filter(y < 30, z < 30) %>%
+  gather(dimen_categories, dimension_values, x:z)
+
+diamonds_flattened %>%
+  select(price, starts_with("dimen")) %>%
+  ggplot(mapping = aes(x = dimension_values, y = price, colour = dimen_categories)) +
+  geom_point() + 
+  ggtitle("With outliers") +
+diamonds_no_outliers %>%
+  select(price, starts_with("dimen")) %>%
+  ggplot(mapping = aes(x = dimension_values, y = price, colour = dimen_categories)) +
+  geom_jitter() +
+  ggtitle("Without outliers") +
+plot_layout(nrow = 2)
+```
+
+From the above plot, I see there're values with bigger dimensions but still small price, and one low, and its not enough to suggest that those values are far off because they're more expensive, suggesting they might have to be removed as errors, which results in the plot without outliers above. I see from the plots generally that the bigger the width or height or depth, the bigger the price. which is understandable, there are some variables of z which are 0, I think these should also be removed as well as a diamond must have depth.  
+
+##### 2. Explore the distribution of price. Do you discover anything unusual or surprising? (Hint: Carefully think about the binwidth and make sure you try a wide range of values.)  
+
+```{r cache = TRUE}
+diamonds %>%
+  ggplot(mapping = aes(x = price)) +
+  geom_histogram() +
+  ggtitle("With no binwidth set") +
+diamonds %>%
+  ggplot(mapping = aes(x = price)) +
+  geom_histogram(binwidth = 70) +
+  ggtitle("With binwidth = 70") +
+diamonds %>%
+  ggplot(mapping = aes(x = price)) +
+  geom_histogram(binwidth = 50) +
+  ggtitle("With binwidth = 50") +
+diamonds %>%
+  ggplot(mapping = aes(x = price)) +
+  geom_histogram(binwidth = 30) +
+  ggtitle("Zoomed into vacant x bins") + 
+  coord_cartesian(ylim = c(0,500), xlim = c(1000, 2000)) +
+plot_layout(nrow = 2)
+```
+
+I see that there're no diamonds that is 1500 dollars, which I didn't see with some binwidths. 
+
+##### 3. How many diamonds are 0.99 carat? How many are 1 carat? What do you think is the cause of the difference?
+
+```{r cache = TRUE}
+## I Don't really have an answer as to the cause of the difference in the question
+diamonds %>%
+  summarise(carat_point99 = sum(carat == 0.99),
+            carat_1 = sum(carat == 1))
+diamonds %>%
+  mutate(is_1_carat = (carat == 1 | carat == 0.99)) %>%
+  select(is_1_carat, carat) %>%
+  ggplot(mapping = aes(x = carat, fill = is_1_carat)) +
+  geom_histogram(binwidth = 0.05) +
+  scale_color_viridis_d(0.5)
+```
+
+##### 4 Compare and contrast coord_cartesian() vs xlim() or ylim() when zooming in on a histogram. What happens if you leave binwidth unset? What happens if you try and zoom so only half a bar shows?
+
+```{r}
+ggplot(data = diamonds, mapping = aes(x)) +
+  geom_histogram() +
+  xlim(c(9, 11)) +
+ggplot(data = diamonds, mapping = aes(x)) +
+  geom_histogram() +
+  coord_cartesian(xlim = c(9, 11)) +
+plot_layout(nrow = 2)
+```
+
+Looking the the two functions above, I notice that, with `coord_cartesian`, setting only `xlim` or `ylim` doesn't zoom appropriately with the corresponding x or y axis, unlike using either `xlim()` or `ylim()`. So `coord_cartesian` should be while providing both the `xlim` and `ylim` parameters accordingly.  
+
