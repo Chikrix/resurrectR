@@ -1,0 +1,77 @@
+---
+title: "Tidy Data"
+author: "Chidi"
+date: "1/7/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE, warning=FALSE, echo=FALSE, message=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  comment = "#>",
+  collapse = TRUE,
+  cache = TRUE)
+```
+
+### Tidy data
+
+```{r warning = FALSE, echo = TRUE, message = FALSE}
+library(tidyverse)
+```
+
+We don't always come across dataset that is tidy to work with. A tidy dataframe is one where the variables are in the columns and the observations for that variable are in the column's rows. In R, one of the most common package for tidying data is the `tidyR` package, which is one of the package in the `tidyverse` packages. Tidying data helps us represent the same data in different ways, which could affect how easy we can work with it. There are 3 rules which makes a dataset tidy;  
+
+* Each variable must have its own column  
+* Each observation must have its own row  
+* Each value must have its own cell  
+
+There're two main advantages for ensuring we have a tidy data. 
+
+1. When we have a consistent data structure for our data, its easier to learn the tools or create tools used to work with the data as we know there's a consistent structure.  
+2. Placing variables in columns is convenient for R given R's vectorised nature. Most packages in the tidyverse package like dplyr, ggplot2, are designed to work with tidy data.    
+
+### Exercises  
+
+##### 1. Using prose, describe how the variables and observations are organised in each of the sample tables.  
+In table1, the variables *year*, *country*, *cases*, and *population* are organised in separate columns of their own, their observations are organised in rows, and the values in the observations are in separate cells on the appropriate column.  In table2, the variables *year* and *country* have their separate columns as table1, for the other two columns *type* and *count* is a combination of two variables *cases* and *population*. *type* is either "cases" or "population" characters, and *count* is  the the count for cases or population. table3, there are 3 columns this time, the rows are observations for *year* and *country* and the *rate*, which is the cases per population. table4a and table4b are two tibbles for *cases* observations or *population* observations. The observations on each tibble are the *country* and the number of cases (for table4a) or population count (table4b)  in *1999* and *2000*.  
+
+##### 2. Compute the rate for table2, and table4a + table4b. You will need to perform four operations:
+###### 1. Extract the number of TB cases per country per year.  
+###### 2. Extract the matching population per country per year.  
+###### 3. Divide cases by population, and multiply by 10000.  
+###### 4. Store back in the appropriate place.    
+
+##### Which representation is easiest to work with? Which is hardest? Why?
+
+```{r}
+##==== Extract the number of TB cases per country per year ====##
+tb2_cases <- table2 %>%
+  filter(type == "cases") %>%
+  group_by(country) %>%
+  count(year, wt = count) 
+
+##==== Extract the matching population per country per year ====##
+tb2_pop <- table2 %>%
+  filter(type == "population") %>%
+  group_by(country) %>%
+  count(year, wt = count)
+
+##==== Divide cases by population, and multiply by 10000. ====##
+case_pop_rate <- (tb2_cases$n/tb2_pop$n) * 10000
+
+##==== Store back in the appropriate place. ====#
+tb2_cases$rate = case_pop_rate
+tb2_pop$rate = case_pop_rate
+tb2_cases
+# tb2_pop same rate as above
+
+##==== All of the above at once in a different way ====##
+# The goal is to compute the rate (cases/population) for each country each year
+
+# table2 %>%
+#   spread(year, count) %>%
+#   group_by(country)
+  
+
+
+```
