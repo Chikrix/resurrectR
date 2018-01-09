@@ -65,13 +65,38 @@ tb2_pop$rate = case_pop_rate
 tb2_cases
 # tb2_pop same rate as above
 
-##==== All of the above at once in a different way ====##
-# The goal is to compute the rate (cases/population) for each country each year
+##==== table4a and table4b ====##
+## table4a is cases
+## table4b is population. 
+## What I want in summary is that, I want the rate (cases/population) for each country in each given year
 
-# table2 %>%
-#   spread(year, count) %>%
-#   group_by(country)
-  
+renamed_tbl4a <- table4a %>%
+  rename(c1999 = `1999`, c2000 = `2000`)
 
+renamed_tbl4b <- table4b %>%
+  rename(p1999 = `1999`, p2000 = `2000`) %>%
+  select(-c(1)) ## removing country as it already exist in the same order in the other table
+
+cbind(renamed_tbl4a, renamed_tbl4b) %>%
+  transmute(
+    country,
+    rate1999 = (c1999 / p1999) * 10000,
+    rate2000 = (c2000 / p2000) * 10000)
 
 ```
+
+From my opinion, I have some reservations for working with `table4a` and table4b`, but I think its the simplest implementation. However, I think the first one was easier to work with because it was the same tibble. I think felt harder/longer to work with because of my current knowledge of R. I think its always better to work on on df (which was why I had to combine 4a and 4b together).
+
+##### 3. Recreate the plot showing change in cases over time using table2 instead of table1. What do you need to do first?  
+
+```{r}
+
+table2 %>% 
+  filter(type == "cases") %>%
+  ggplot(mapping = aes(as.factor(year), count)) +
+  geom_point(aes(colour = country)) +
+  geom_line(aes(group = country), colour = "grey50") +
+  labs(x = "year", y = "cases")
+  
+```
+
