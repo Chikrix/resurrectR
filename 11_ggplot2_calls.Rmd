@@ -1,0 +1,43 @@
+---
+title: "ggplot2 Calls"
+author: "Chidi"
+date: "1/9/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE, warning=FALSE, echo=FALSE, message=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  comment = "#>",
+  collapse = TRUE,
+  cache = TRUE)
+```
+
+As we get more used to ggplot2, we
+
+
+```{r warning = FALSE, echo = TRUE, message = FALSE}
+library(tidyverse)
+```
+
+Usually, the first one or two arguments of a function are usually important so that we should know them by heart. With the `ggplot()` method, the first and second arguments are `data` and `mapping` respectively, and the first two arguments to `aes()` are `x` and `y`. These argument names doesn't need to be specified explicitly, and knowing the position of an method argument is important in order to be able to do this. This saves typing, and reduces the amount of boilerplate code we write. For example;  
+
+```{r fig.height=3, cache=TRUE}
+ggplot(data = faithful, mapping = aes(x = eruptions)) +
+  geom_freqpoly(binwidth = 0.25)
+
+## this can be simplified as 
+
+ggplot(faithful, aes(eruptions)) +
+  geom_freqpoly(binwidth = 0.25)
+```
+
+Also, we can pipe the result of a data transformation into a ggplot2 call, again, we don't need to specify the data (which we would have done using `.` as the data), what we do is;  
+
+```{r}
+diamonds %>%
+  count(cut, clarity) %>%
+  ggplot(aes(clarity, cut, fill = n)) +
+  geom_tile()
+```
+
