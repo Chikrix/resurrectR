@@ -82,7 +82,7 @@ filter(df, x > 1 | is.na(x)) # returns NA and 3
 ```
 
 
-### Exercises  
+### Exercises {#exercises}  
 
 ##### 1. Find all flights that
 ###### a. Had an arrival delay of two or more hours
