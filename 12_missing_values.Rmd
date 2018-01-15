@@ -63,11 +63,8 @@ filter(mylist, x %% 2 == 0)
 
 ### 5.2.4 Exercises 
 
-```{r}
-path = paste0(getwd(), "/04_manipualtion_basics.Rmd" )
-```
+I solved the the exercises for this section in  [04_manipulation_basics.Rmd](04_manipualtion_basics.Rmd###Exercises).  
 
-I solved the the exercises for this section in  [04_manipulation_basics.Rmd](04_manipualtion_basics.Rmd).  
 
 
 
