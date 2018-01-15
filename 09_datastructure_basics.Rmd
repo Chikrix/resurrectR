@@ -33,16 +33,12 @@ Atomic vectors are the simplest data structures upon which other structures are 
 Vectors can contain *NA* values, which are known as missing values. *integer* and *double* vectors are collectively known as *numeric vectors*. We can create atomic vectors using `c()` function. 
 
 ```{r}
-logical_vector <- c(TRUE, FALSE, FALSE)
-integer_vector <- c(1L, 2L, 3L, NA)
-double_vector <- c(1, 2, 3)
-double_vector2 <- c(1.5, 0.2, 3, NA)
-character_vector <- c("chi", "di", "eb", "re")
-typeof(logical_vector)
-typeof(integer_vector)
-typeof(double_vector)
-typeof(double_vector2)
-typeof(character_vector)
+typeof(c(TRUE, FALSE, FALSE))
+typeof(c(1L, 2L, 3L, NA))
+typeof(c(1, 2, 3))
+typeof(c(1.5, 0.2, 3, NA))
+typeof(c("chi", "di", "eb", "re"))
+typeof(c(1L, 3, NA, "cha"))
 ```
 
 #### Augumented Vectors  
@@ -58,13 +54,13 @@ Related vectors (augumented or atomic) are can be grouped together to form a dat
 
 ```{r}
 (my_tibble <- tibble(x = c(1,9,5),
-                    y = c(TRUE, TRUE, FALSE),
-                    z = c("apple", "pear", "banana")))
+                     y = c(TRUE, TRUE, FALSE),
+                     z = c("apple", "pear", "banana")))
 
 (my_tibble2 <- tribble( # notice the name "tribble" not "tibble", but it's used to create a "tibble"
-  ~x, ~y, ~z,
-  1, TRUE, "apple",
-  9, TRUE, "pear",
+ ~x, ~y,    ~z,
+  1, TRUE,  "apple",
+  9, TRUE,  "pear",
   5, FALSE, "banana"
 ))
 ```

@@ -1,0 +1,73 @@
+---
+title: "Missing Values"
+author: "Chidi"
+date: "1/15/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE, warning=FALSE, echo=FALSE, message=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  comment = "#>",
+  collapse = TRUE,
+  cache = TRUE)
+```
+
+
+### Introduction  
+
+```{r warning = FALSE, echo = TRUE, message = FALSE}
+library(tidyverse)
+library(nycflights13)
+```
+
+R uses **NA**(Not Available) to represent unknown but potentially measurable values. Almost any operation involving NA's would return NA. 
+
+```{r}
+NA > 5
+10 == NA
+NA + 10
+NA / 2
+NA == NA
+```
+
+To understand why this is so;  
+
+```{r}
+marys_age <- NA # basically saying we don't know
+janes_age <- NA # same as above
+marys_age == janes_age # obviously we don't know
+marys_age == marys_age # same thing, we don't don't know (R doesn't use reference based assignment :) )
+c = 4
+d = c
+c = 7
+d
+c
+```
+
+To check for NA values, 
+
+```{r}
+is.na(marys_age)
+
+is.na(c(32, NA)) ## checks for each item in the vector if it is NA
+
+```
+
+Filtering operation from *dplyr* package returns only items in what is being filtered that evaluates to true and excludes values that are false or NA  
+
+```{r}
+mylist = tibble(x = c(2,56,1,5,9,0))
+filter(mylist, x %% 2 == 0)
+```
+
+### 5.2.4 Exercises 
+
+```{r}
+path = paste0(getwd(), "/04_manipualtion_basics.Rmd" )
+```
+
+I solved the the exercises for this section in  [04_manipulation_basics.Rmd](04_manipualtion_basics.Rmd).  
+
+
+
