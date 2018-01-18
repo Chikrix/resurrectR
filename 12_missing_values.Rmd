@@ -20,6 +20,7 @@ knitr::opts_chunk$set(
 library(tidyverse)
 library(nycflights13)
 library(naniar)
+library(simputation)
 ```
 
 R uses **NA**(Not Available) to represent unknown but potentially measurable values. Almost any operation involving NA's would return NA. 
@@ -140,3 +141,145 @@ For a histogram or bar chart, ggplot removes bars for the NA points, and shows a
 ##### 2. What does na.rm = TRUE do in mean() and sum()? 
 
 It filters out NA values from the provided vector, before performing mean or sum operation.  
+
+
+### Handling missing values with nanair package  
+
+ggplot2 usually removes NA values in its plot, although it provides the `geom_miss_point()` function that tries to visualise the missing points in our dataset, otherwise, it shows us a warning that it NA values were removed.  
+
+```{r}
+ggplot(airquality, aes(Ozone)) +
+  geom_density()
+```
+
+The above plot prints a warning that 37 values were removed.  
+
+nanair package is package for analysing and visualising missing data. The package provides a data structure (called the shadow matrix), proposed by [Swayne and Buja, 1998](https://www.researchgate.net/publication/2758672_Missing_Data_in_Interactive_High-Dimensional_Data_Visualization). The shadow mstrix structure is the same dimension as the data, its values are represented as "NA" or "!NA", where NA are values that are missing values, and "!NA" are values that are not missing in the data, and the variable names are kept in their original place as the original data, but their names are sufficed with "_NA". So the shadow matrix is just the same as the datastructure its shadowing, except with changes in values and names, but the same underlying structure 
+
+```{r}
+(airquality_shadow = as_shadow(airquality))
+typeof(airquality_shadow)
+typeof(airquality)
+dim(airquality)
+dim(airquality_shadow)
+```
+
+This shadow matrix structure makes it easy to handle places where there're missing values, as well as places makes it easy to visualise the effect/relationships of missing values in our data.  
+
+```{r}
+airquality %>%
+  bind_shadow() %>%
+  ggplot(aes(Temp, fill = Ozone_NA)) +
+  geom_density(alpha = 0.5)
+```
+
+From the above, I see that a lot of the values in the temp variable that has ozone as NA lies between 70 and 90.  
+
+We can also visualise imputations. For example (note the `impute_lm` method is from the *simputation* package)    
+
+```{r}
+airquality %>%
+  bind_shadow() %>%
+  impute_lm(Ozone ~ Temp + Solar.R) %>%
+  ggplot(aes(Solar.R, Ozone, colour = Ozone_NA)) +
+    geom_point()
+```
+
+The package also has several nice visualisatons that can be made, as shown below.  
+
+```{r}
+vis_miss(airquality)
+```
+
+This `vis_miss` method shows me the amount of values that are missing for each category. Lines coloured black are rows where there're missing values in the variable. This method also provides a summary of the percent that are missing for each variable. Like I see that, 24% of values are missing in the Ozone column, and fewer in the Solar.R variable, and nothing from the rest is missing. Generally, about 4.8 percent of the whole data is missing.  
+
+Sometimes, we can have a situation where we plot and get the message that some values weren't plotted because they were missing, we can visualise those missing points using `geom_missing_points`, this plots the missing and not missing values in a clean way  
+
+```{r}
+ggplot(airquality, aes(Ozone, Solar.R)) +
+  geom_miss_point() +
+  facet_wrap(~Month) +
+  theme_dark()
+```
+
+We can make visual summaries of missing data. For example;  
+
+```{r}
+gg_miss_var(airquality) +
+  labs(y = "Number of missing values")
+```
+
+The above creates a nice visualisation of the number of missing values for each category.   
+
+```{r}
+gg_miss_case(airquality)
+```
+
+The above shows the number of missing values for each row observation.  
+
+The following shows the number of missing variable in each column, broken down by a categorical variable. Although its somehow hard to intepret the percent of missing values    
+
+```{r}
+gg_miss_fct(riskfactors, marital)
+```
+
+Say I want to plot the amount of missing values in a given span or breaksize for a given variable  
+
+```{r}
+miss_var_span(pedestrian, hourly_counts, span_every = 3000)
+gg_miss_span(pedestrian, hourly_counts, span_every = 3000)
+gg_miss_span(pedestrian, hourly_counts, span_every = 5000) + theme_dark()
+```
+
+Say I want to visualise the cumulative sum of missing values for an entire dataset, we can use the `gg_miss_case_cumsum()` function.  
+
+```{r}
+gg_miss_case_cumsum(airquality) 
+gg_miss_case_cumsum(riskfactors, breaks = 50)
+```
+
+We can do the same for the variables in a dataset, it reads the variables from left to right  
+
+```{r}
+gg_miss_var_cumsum(riskfactors)
+```
+
+This is a nice visualisation, like I can see that there's a high jump of the number of missing cases 
+
+I can also visualise which columns have at least one missing values  
+
+```{r}
+gg_miss_which(riskfactors) + coord_flip()
+
+```
+
+Aside from the visualisations shown above, there're several handy helper functions for showing proportions, percents, missing or complete observations  
+
+```{r}
+n_miss(airquality) 
+# the above counts the number of missing values in the entire dataset. Same as `sum(is.na(airquality))`
+n_complete(airquality) # number of complete cases, values that aren't NA
+prop_miss(airquality)
+prop_complete(airquality)
+pct_miss(airquality)
+pct_complete(airquality)
+```
+
+We can also make numerical summaries for missing data. The syntax always begins with `miss_`. Summaries that focus on variables or a single selected variable always begins with `miss_var_`, while those that focus on the  entire dataset always begins with `miss_case_`. For example  
+
+```{r}
+miss_case_summary(airquality)
+```
+
+The shows each row number (the case variable), and the number of missing values it has (n_missing), and the percent of missing value that covers for that observation (percent).  
+
+```{r}
+airquality %>%
+  group_by(Month) %>%
+  select(Ozone, Solar.R) %>%
+  miss_var_cumsum()
+```
+nanair also works with the dplyr package's. The above checks the number of missing values for the variables Ozone and Solar.R for each month.  
+
+It is these summary functions that are used to visualise most of the visualisations in the package, as most of the visualisation functions do have a summary function behind it.   
+
