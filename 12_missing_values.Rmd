@@ -68,6 +68,7 @@ filter(mylist, x %% 2 == 0)
 I solved the the exercises for this section in  [04_manipulation_basics.Rmd](04_manipualtion_basics.Rmd#exercises). 
 
 Some functions that operate on vectors would return NA if the vector has at least one NA value, for example;  
+
 ```{r}
 flights %>% 
   group_by(year, month, day) %>% 
@@ -75,6 +76,7 @@ flights %>%
 ```
 
 From the above example, the *mean* variable returns NA for each value. This is because aggregation functions like `mean()` would return missing value if there's a missing value in the input, for this reason, almost all aggregation functions has the argument `na.rm` which can be true (remove NA's before aggregating), or false.  
+
 ```{r}
 flights %>%
   group_by(year, month, day) %>%
@@ -279,6 +281,7 @@ airquality %>%
   select(Ozone, Solar.R) %>%
   miss_var_cumsum()
 ```
+
 nanair also works with the dplyr package's. The above checks the number of missing values for the variables Ozone and Solar.R for each month.  
 
 It is these summary functions that are used to visualise most of the visualisations in the package, as most of the visualisation functions do have a summary function behind it.   
