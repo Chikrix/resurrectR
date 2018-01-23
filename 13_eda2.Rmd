@@ -1,0 +1,65 @@
+---
+title: "EDA-2D"
+author: "Chidi"
+date: "1/22/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE, warning=FALSE, echo=FALSE, message=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  comment = "#>",
+  collapse = TRUE,
+  cache = FALSE)
+```
+
+### Covariation  
+
+While variation describes the behavior within a variable, covariation describes the behaviour between two variables. Covariation is the tendency of the values of two or more variables to vary together in a related way.  The best way to spot covariation is to visualise variations between two or more variables. 
+
+```{r warning = FALSE, echo = TRUE, message = FALSE}
+library(tidyverse)
+library(nycflights13)
+library(emo)
+```
+
+#### A categorical and continuous variable  
+
+We may want to see the distribution of a continuous variable broken down by a categorical variable. We may want to use a normal `freqpoly`, but this wouldn't be very useful for this comparison, because the height of the lines are given by the count, hence if one group is much smaller than the others, it'll be hard to see the differences in the shape.  For example;  
+
+```{r}
+ggplot(diamonds, aes(price)) +
+  geom_freqpoly(aes(colour = cut), binwidth = 500)
+```
+
+In the above, its hard to see the difference in distribution because the counts vary very well. To make the comparison better, given that our goal is to compare different distributions across categories, what we can do is to have the y-axis shown as the *density*, which is the count standardised so that the area under each frequency polygon is 1   
+
+```{r}
+diamonds %>%
+  group_by(cut) %>%
+  summarise(prices = median(price, na.rm = T))
+
+ggplot(diamonds, aes(price, y = ..density..)) +
+  geom_freqpoly(aes(colour = cut), binwidth = 500) +
+  scale_colour_brewer(palette="Set1")
+```
+
+With the above plot, I can see and compare the distributions across the different categories, and intepret them. Like from the above plot, I can see that fair diamonds (low quality) has the highest average price. **Boxplots** are another alternative to display a continuous variable broken down by a categorical variable. A boxplot stretches from the 25^th^ percentile to the 75^th^ percentile, a range known as the Interquantile range (IQR). The middle of the box is a line showing the median (50^th^ percentile). Points are plotted outside the boxplot edges, these are points that fall over 1.5 times from either edges of the IQR (i.e over 1.5 times below the 25^th^ percentile,  and/or over 1.5 times outside the 75^th^ percentile). These points are seen as unusual (outliers), hence why they're plotted individually. 
+
+![Boxplot](figures/EDA-boxplot.png)
+So to make a boxplot of the distribution of price for each cut category  
+
+```{r}
+ggplot(diamonds, aes(cut, price)) +
+  geom_boxplot()
+```
+
+Looking at the plot above, and comparing with that of the freqpoly plot earlier, with this one, I also see that a better quality diamond are cheaper on average than fair diamonds (lowest qualiity) 
+`r ji("thinking")``r ji("thinking")``r ji("thinking")`  
+
+The levels used by cut has an intrinsic ordering (good, very good, fair, etc), and we can use `reorder` function to reorder the boxplot. And the cut factor already had its levels ordered in an order I like;
+
+```{r}
+levels(diamonds$cut) # I can reorder this using reorder
+```
+
