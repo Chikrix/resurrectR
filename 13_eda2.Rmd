@@ -21,6 +21,7 @@ While variation describes the behavior within a variable, covariation describes 
 library(tidyverse)
 library(nycflights13)
 library(emo)
+library(naniar)
 ```
 
 #### A categorical and continuous variable  
@@ -63,3 +64,8 @@ The levels used by cut has an intrinsic ordering (good, very good, fair, etc), a
 levels(diamonds$cut) # I can reorder this using reorder
 ```
 
+### 7.5.1.1 Exercises  
+
+##### 1. Use what you’ve learned to improve the visualisation of the departure times of cancelled vs. non-cancelled flights.  
+
+To answer this, 
