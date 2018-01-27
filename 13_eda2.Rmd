@@ -22,6 +22,9 @@ library(tidyverse)
 library(nycflights13)
 library(emo)
 library(naniar)
+library(ggstance)
+library(lvplot)
+library(patchwork)
 ```
 
 #### A categorical and continuous variable  
@@ -68,4 +71,76 @@ levels(diamonds$cut) # I can reorder this using reorder
 
 ##### 1. Use what you’ve learned to improve the visualisation of the departure times of cancelled vs. non-cancelled flights.  
 
-To answer this, 
+I can't plot ggplot values in a ggplot2 plot, and so, to visualise this, I know that when `dep_time` is NA, it means the flight was cancelled, but there's usually a scheduled time, so I can use that to know flights whose departure time is missing.   
+
+```{r}
+flights_sched <- flights %>%
+  select(dep_time, sched_dep_time) %>%
+  mutate(cancelled = is.na(dep_time),
+         sched_hours = sched_dep_time %/% 100,
+         sched_mins = sched_dep_time %% 100,
+         sched_dep_time = sched_hours + sched_mins / 60)
+ 
+ggplot(flights_sched, aes(cancelled, sched_dep_time)) +
+  geom_boxplot()
+
+ggplot(flights_sched, aes(sched_dep_time, colour = cancelled)) +
+  geom_freqpoly()
+```
+
+I see that flights that're cancelled usually have a late scheduled departure time. And there're few cancelled flights cases. 
+
+##### 2. What variable in the diamonds dataset is most important for predicting the price of a diamond? How is that variable correlated with cut? Why does the combination of those two relationships lead to lower quality diamonds being more expensive?  
+
+To solve the first question, I'll check which variable is most correlated with the `price` dataset, and I could also use regression as well.
+
+```{r}
+diamonds %>%
+  select(carat, depth, table, price, x, y, z) %>%
+  cor(.)
+
+ggplot(diamonds, aes(cut, carat)) +
+  geom_boxplot()
+```
+
+From the above, I see that carat is a better price predictor. 
+
+##### 3.Install the ggstance package, and create a horizontal boxplot. How does this compare to using coord_flip()?  
+
+```{r}
+ggplot(diamonds, aes(cut, price)) +
+  geom_boxplot() +
+  coord_flip()
+
+ggplot(diamonds, aes(price, cut)) +
+  geom_boxploth()
+```
+
+``ggstance`` automatically applies a coord_flip action on a ggplot2 plot
+
+##### 4. One problem with boxplots is that they were developed in an era of much smaller datasets and tend to display a prohibitively large number of “outlying values”. One approach to remedy this problem is the letter value plot. Install the lvplot package, and try using geom_lv() to display the distribution of price vs cut. What do you learn? How do you interpret the plots?
+
+```{r}
+ggplot(diamonds, aes(cut, price)) +
+  geom_boxplot() 
+
+ggplot(diamonds, aes(cut, price)) +
+  geom_lv(aes(fill = ..LV..))
+```
+
+Basically, Letter-value plots are boxplots for large datasets, while normal boxplot is useful for showing small data sets (n < 200). When using a boxplot for large datasets (~ 10,000 - 100,000), the number of outliers grows linearly with the sample data (usually wrongly labelled as outlier in this case), also, the estimates of tail behaviour are not displayed, even though these large sample sizes means estimates on the tail are more likely to be genuine extreme observations, or true outliers as would be labelled by a boxplot. Letter-value plots are a variation of boxplots where the whiskers are replaced with a variable number of letter values, selected based on the number of observations. Any values outside the outermost letter value (note that each box above is coloured different by the letter it represents), is displayed individually and is what is considered outlier by this plot. These modifications reduce the amount of outliers we see in a boxplot for large datasets, and conveys more reliable information about the tails, and outliers are the most extreme values only. See the documentation for more info, or the paper [here](http://vita.had.co.nz/papers/letter-value-plot.pdf) (I'll still have to look at it more) 
+
+##### 5. Compare and contrast geom_violin() with a facetted geom_histogram(), or a coloured geom_freqpoly(). What are the pros and cons of each method?  
+
+```{r}
+ggplot(diamonds, aes(cut, price)) +
+  geom_violin() +
+ggplot(diamonds, aes(price)) +
+  geom_histogram() +
+  facet_wrap(~ cut) +
+ggplot(diamonds, aes(price)) +
+  geom_freqpoly(aes(color = cut)) +
+plot_layout(ncol = 1)
+```
+
+One con I find with the geom_freqpoly or geom_histogram is that, one has to play around well with the binwidth sometimes before you see some useful pattern. With the Violin plot, its easy to see and compare areas for all categories where there're more data points, compared to either a freq poly or histogram. Its easier to compare patterns in the categories 
