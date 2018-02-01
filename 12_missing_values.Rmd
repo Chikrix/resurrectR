@@ -2,7 +2,7 @@
 title: "Missing Values"
 author: "Chidi"
 date: "1/15/2018"
-output: html_document
+output: girhub_document
 ---
 
 ```{r setup, include=FALSE, warning=FALSE, echo=FALSE, message=FALSE}

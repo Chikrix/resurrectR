@@ -2,7 +2,7 @@
 title: "EDA-2D"
 author: "Chidi"
 date: "1/22/2018"
-output: html_document
+output: github_document
 ---
 
 ```{r setup, include=FALSE, warning=FALSE, echo=FALSE, message=FALSE}
