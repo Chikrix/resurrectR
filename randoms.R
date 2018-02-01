@@ -1,3 +1,8 @@
+---
+output: github_document
+---
+  
+
 ## Datasets and functions that facilitate data analysis labs in data science courses
 ## and workshops.
 library(dslabs)
