@@ -25,9 +25,13 @@ library(naniar)
 library(ggstance)
 library(lvplot)
 library(ggbeeswarm)
+<<<<<<< HEAD
+=======
+library(seriation)
+>>>>>>> Complete exercise 7.5.1.1
 ```
 
-#### A categorical and continuous variable  
+### A categorical and continuous variable  
 
 We may want to see the distribution of a continuous variable broken down by a categorical variable. We may want to use a normal `freqpoly`, but this wouldn't be very useful for this comparison, because the height of the lines are given by the count, hence if one group is much smaller than the others, it'll be hard to see the differences in the shape.  For example;  
 
@@ -147,7 +151,11 @@ One problem with both freqpoly and histogram is that, one needs to play around w
 Makes a violin with jittered points to reduce overplotting for each category. It makes use of the **vipor package** (a package used to plot categorical data using quasirandom noise and density estimates).
 
 ```{r}
+<<<<<<< HEAD
 ggplot(mpg, aes(year, displ)) +
+=======
+ggplot(mpg, aes(class, displ)) +
+>>>>>>> Complete exercise 7.5.1.1
   geom_quasirandom(aes(colour = as.factor(year))) +
   labs(colour = "year")
 ```
@@ -160,7 +168,46 @@ This also does something similar to `geom_quasirandom`, except that it uses the 
 ## A bee swarm plot
 beeswarm::beeswarm(mpg$displ)
 
+<<<<<<< HEAD
 ggplot(mpg, aes(factor(year), displ)) +
   geom_beeswarm()
 ```
 
+=======
+ggplot(mpg, aes(class, displ)) +
+  geom_beeswarm(aes(color = factor(year))) +
+  labs(colour = "year")
+```
+
+See the vignette for more details.
+
+### 7.5.2 Two categorical variables
+
+To visualise the covariation between categorical variables, we need to count the number of observations for each combination. This can be done using `geom_count`  
+
+```{r}
+ggplot(diamonds, aes(cut, color)) +
+  geom_count()
+```
+
+The size of each circle shows the amount of that combination for that circle. Another approach is to compute the count combination of the categories using dplyr's `count` and then visualising the result with `geom_tile` and `fill`.  
+
+```{r}
+diamonds %>%
+  count(cut, color) %>%
+ggplot(aes(color, cut)) +
+  geom_tile(aes(fill = n)) +
+  scale_fill_gradientn(colours=rainbow(7))
+```
+
+If the categorical variables are unordered, we can use the `seriation` package to order the columns and rows to better reveal interesting patterns, for larger plots, we can try the `d3heatmap` or `heatmaply` (interactive) packages. 
+
+##### Exercise 7.5.2.1  
+
+1. How could you rescale the count dataset above to more clearly show the distribution of cut within colour, or colour within cut?  
+
+```{r}
+diamonds %>%
+  count(color, cut)
+```
+>>>>>>> Complete exercise 7.5.1.1
