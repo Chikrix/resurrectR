@@ -24,7 +24,7 @@ library(emo)
 library(naniar)
 library(ggstance)
 library(lvplot)
-library(patchwork)
+library(ggbeeswarm)
 ```
 
 #### A categorical and continuous variable  
@@ -39,11 +39,7 @@ ggplot(diamonds, aes(price)) +
 In the above, its hard to see the difference in distribution because the counts vary very well. To make the comparison better, given that our goal is to compare different distributions across categories, what we can do is to have the y-axis shown as the *density*, which is the count standardised so that the area under each frequency polygon is 1   
 
 ```{r}
-diamonds %>%
-  group_by(cut) %>%
-  summarise(prices = median(price, na.rm = T))
-
-ggplot(diamonds, aes(price, y = ..density..)) +
+ggplot(diamonds, aes(price, ..density..)) +
   geom_freqpoly(aes(colour = cut), binwidth = 500) +
   scale_colour_brewer(palette="Set1")
 ```
@@ -134,13 +130,37 @@ Basically, Letter-value plots are boxplots for large datasets, while normal boxp
 
 ```{r}
 ggplot(diamonds, aes(cut, price)) +
-  geom_violin() +
+  geom_violin() 
 ggplot(diamonds, aes(price)) +
   geom_histogram() +
-  facet_wrap(~ cut) +
-ggplot(diamonds, aes(price)) +
-  geom_freqpoly(aes(color = cut)) +
-plot_layout(ncol = 1)
+  facet_wrap(~ cut, ncol = 1) 
+ggplot(diamonds, aes(price, y = ..density..)) +
+  geom_freqpoly(aes(color = cut)) 
 ```
 
-One con I find with the geom_freqpoly or geom_histogram is that, one has to play around well with the binwidth sometimes before you see some useful pattern. With the Violin plot, its easy to see and compare areas for all categories where there're more data points, compared to either a freq poly or histogram. Its easier to compare patterns in the categories 
+One problem with both freqpoly and histogram is that, one needs to play around with binwidth to see patterns in the distribution on some occassions. Also, with a categorically colored freqploy, it gets hard to make comparisons especially with overlapping lines and when there's much distance between the count of different categories (although we can use the density as the y axis option), other than that, I think its easier to compare distribution patterns across categories with a freqpoly than with a faceted histogram or violin plot. Violin plots are a good way to compare the density of different areas of a category distribution. Generally, we have to play around tuning parameters to get great plots, like the faceted histogram can be improved with a scales "free_y" argument. 
+
+##### 6. If you have a small dataset, it’s sometimes useful to use geom_jitter() to see the relationship between a continuous and categorical variable. The ggbeeswarm package provides a number of methods similar to geom_jitter(). List them and briefly describe what each one does.  
+
+###### `geom_quasirandom` 
+
+Makes a violin with jittered points to reduce overplotting for each category. It makes use of the **vipor package** (a package used to plot categorical data using quasirandom noise and density estimates).
+
+```{r}
+ggplot(mpg, aes(year, displ)) +
+  geom_quasirandom(aes(colour = as.factor(year))) +
+  labs(colour = "year")
+```
+
+###### `geom_beesawrm`
+
+This also does something similar to `geom_quasirandom`, except that it uses the **beeswarm package**, which is a package used to make a *bee swarm plot*, which is a one dimensional scatterplot but with closely packed non-overlapping points. `geom_beeswarm` makes this plot for each category.  
+
+```{r}
+## A bee swarm plot
+beeswarm::beeswarm(mpg$displ)
+
+ggplot(mpg, aes(factor(year), displ)) +
+  geom_beeswarm()
+```
+
