@@ -41,7 +41,7 @@ ggplot(data = mpg, aes(x = displ, y = hwy, size = class)) +
     geom_point()
 ```
 
-In the plot above, each car `class` is mapped with its own point size as shown in the legend. However, I get the warning -  *Warning: Using size for a discrete variable is not advised.*, this is because I'm mapping an ordered variable (`class`) to an ordered aestistic - **size**, which is not a good idea, and therefore not recommended.
+In the plot above, each car `class` is mapped with its own point size as shown in the legend. However, I get the warning -  *Warning: Using size for a discrete variable is not advised.*, this is because I'm mapping an discrete variable (`class`) to a **size** aestistic, which is not a good idea, and therefore not recommended.
 
 Take a look at the plots below
 
@@ -145,7 +145,7 @@ ggplot(data = mpg) +
   scale_shape_manual(values = c(0:7))
 ```
 
-When mapping the same variable to multiple aestistics, it applies those aestistics to each of the categories, like from the above, I mapped class to both size and colour aestistics, so it applied different sizes to each of the class category, and different colours to each of the category. Doing this doesn't really any value to the plot than if I had used one aestistic property for the variable.  
+When mapping the same variable to multiple aestistics, it applies those aestistics to each of the categories, like from the above, I mapped class to both size and colour aestistics, so it applied different sizes to each of the class category, and different colours to each of the category. Doing this doesn't really add any value to the plot than if I had used one aestistic property for the variable.  
 
 ##### 5. What does the stroke aesthetic do? What shapes does it work with? (Hint: use ?geom_point)
 
@@ -274,8 +274,8 @@ ggplot(data = mpg) +
 ```
 
 ##### What are the advantages to using faceting instead of the colour aesthetic? What are the disadvantages? How might the balance change if you had a larger dataset?  
-One advantages of faceting against using aestistics is that there might be few data points to plot, and so the plot might not be of much information, which would not be the case if the data set was larger. 
-Another advantage of using colour as facet instead of a colour aestistic is that, I can see the whole pattern clearly and better for each of the colour, which isn't clear with the aestistic because of noise from other points plotted on an a colour aestistic plot. The above can be an advantage and a disadvantage based on what we want to achieve, basically if all those. Another advantage would be that we may want to add another dimension, which would be by using a facet and an aestistic together.  
+~One advantages of faceting against using color aestistics is that there might be few data points to plot, and so the plot might not be of much information, which would not be the case if the data set was larger.~   
+Another advantage of using colour as facet instead of a colour aestistic is that, I can see the whole pattern clearly and better for each of the colour, which isn't clear with the aestistic because of noise from other points plotted on an a colour aestistic plot. The above can be an advantage and a disadvantage based on what we want to achieve. Another advantage would be that we may want to add another dimension, which would be by using a facet and an aestistic together.  
 
 ##### 5. Read ?facet_wrap. What does nrow do? What does ncol do? What other options control the layout of the individual panels? Why doesn’t facet_grid() have nrow and ncol argument?  
 According to the documentation, "facet_wrap wraps a 1d sequence of panels into 2d. This is generally a better use of screen space than facet_grid because most displays are roughly rectangular.". `nrow` and `ncol` is the rows and columns the plots should fit in. Other options are `shrink`, `labeller`, etc. `facet_grid()` doesn't have the `ncol` and `nrow` argument because it doesn't need it as the ncol and nrow is provided by the unique values of the variables in the faceting formula.  

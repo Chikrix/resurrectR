@@ -120,7 +120,7 @@ Based on the above, for flights away from NYC in 2013, **`r round((nrow(ans_a)/f
 
 ##### 2. Another useful dplyr filtering helper is between(). What does it do? Can you use it to simplify the code needed to answer the previous challenges?  
 
-Between is a shortcut for the condition `x >= left & x <= right`. I used it above as well to geth the result for question 1d (`ans_d`) above.  
+Between is a shortcut for the condition `x >= left & x <= right`. I used it above as well to get the result for question 1d (`ans_d`) above.  
 
 ##### 3. How many flights have a missing dep_time? What other variables are missing? What might these rows represent? 
 

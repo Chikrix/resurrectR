@@ -25,10 +25,7 @@ library(naniar)
 library(ggstance)
 library(lvplot)
 library(ggbeeswarm)
-<<<<<<< HEAD
-=======
 library(seriation)
->>>>>>> Complete exercise 7.5.1.1
 ```
 
 ### A categorical and continuous variable  
@@ -151,11 +148,7 @@ One problem with both freqpoly and histogram is that, one needs to play around w
 Makes a violin with jittered points to reduce overplotting for each category. It makes use of the **vipor package** (a package used to plot categorical data using quasirandom noise and density estimates).
 
 ```{r}
-<<<<<<< HEAD
-ggplot(mpg, aes(year, displ)) +
-=======
 ggplot(mpg, aes(class, displ)) +
->>>>>>> Complete exercise 7.5.1.1
   geom_quasirandom(aes(colour = as.factor(year))) +
   labs(colour = "year")
 ```
@@ -168,12 +161,9 @@ This also does something similar to `geom_quasirandom`, except that it uses the 
 ## A bee swarm plot
 beeswarm::beeswarm(mpg$displ)
 
-<<<<<<< HEAD
 ggplot(mpg, aes(factor(year), displ)) +
   geom_beeswarm()
-```
 
-=======
 ggplot(mpg, aes(class, displ)) +
   geom_beeswarm(aes(color = factor(year))) +
   labs(colour = "year")
@@ -210,4 +200,3 @@ If the categorical variables are unordered, we can use the `seriation` package t
 diamonds %>%
   count(color, cut)
 ```
->>>>>>> Complete exercise 7.5.1.1

@@ -50,7 +50,7 @@ demo <- tribble(
   "Good",      4960,
   "Very Good", 12082,
   "Premium",   13791,
-  "Ideal",      21551
+  "Ideal",     21551
 )
 
 ggplot(data = demo) +
@@ -166,8 +166,8 @@ plot_grid(
   labels = "AUTO", ncol = 1)
 ```
 
-Note the difference between both graphs, its the "position" argument. The first one uses a position equal to "stack", and the second one uses a "dodge" argument, others includes "identity" and "fill".    
-The position parameter is for position adjustment of the geom objects. *identity* position would place each object exactly where it falls in the context of the graph. Its not very useful for bars. To see the positioning. To see "identity" positions;
+Note the difference between both graphs, its the "position" argument. The first one uses position as "stack", and the second one uses "dodge" for position, others includes "identity" and "fill".    
+The position parameter is for position adjustment of the geom objects. *identity* position would place each object exactly where it falls in the context of the graph. Another example for "identity" positions;
 
 ```{r}
 plot_grid(ggplot(data = diamonds, mapping = aes(x = cut, fill = clarity)) +

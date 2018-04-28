@@ -111,7 +111,7 @@ Note that we can use our `count` variables to compute things that are plotted he
 diamonds %>%
   count(cut)
 
-diamonds %>%
+diamonds
   count(cut_width(carat, 0.2))
 ```
 
