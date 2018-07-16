@@ -20,12 +20,13 @@ While variation describes the behavior within a variable, covariation describes 
 ```{r warning = FALSE, echo = TRUE, message = FALSE}
 library(tidyverse)
 library(nycflights13)
-library(emo)
 library(naniar)
 library(ggstance)
 library(lvplot)
 library(ggbeeswarm)
 library(seriation)
+library(emo)
+library(patchwork)
 ```
 
 ### A categorical and continuous variable  
@@ -45,7 +46,7 @@ ggplot(diamonds, aes(price, ..density..)) +
   scale_colour_brewer(palette="Set1")
 ```
 
-With the above plot, I can see and compare the distributions across the different categories, and intepret them. Like from the above plot, I can see that fair diamonds (low quality) has the highest average price. **Boxplots** are another alternative to display a continuous variable broken down by a categorical variable. A boxplot stretches from the 25^th^ percentile to the 75^th^ percentile, a range known as the Interquantile range (IQR). The middle of the box is a line showing the median (50^th^ percentile). Points are plotted outside the boxplot edges, these are points that fall over 1.5 times from either edges of the IQR (i.e over 1.5 times below the 25^th^ percentile,  and/or over 1.5 times outside the 75^th^ percentile). These points are seen as unusual (outliers), hence why they're plotted individually. 
+With the above plot, I can see and compare the distributions across the different categories, and intepret them. Like from the above plot, I can see that fair diamonds (low quality) has the highest average price. **Boxplots** are another alternative to display a continuous variable broken down by a categorical variable. A boxplot stretches from the 25^th^ percentile to the 75^th^ percentile, a range known as the Interquantile range (IQR). The middle of the box is a line showing the median (50^th^ percentile). Points are plotted outside the boxplot edges, these are points that fall over 1.5 times from either edges of the IQR (i.e over 1.5 times below the 25^th^ percentile, and/or over 1.5 times outside the 75^th^ percentile). These points are seen as unusual values (outliers), hence why they're plotted individually. 
 
 ![Boxplot](figures/EDA-boxplot.png)
 So to make a boxplot of the distribution of price for each cut category  
@@ -55,7 +56,7 @@ ggplot(diamonds, aes(cut, price)) +
   geom_boxplot()
 ```
 
-Looking at the plot above, and comparing with that of the freqpoly plot earlier, with this one, I also see that a better quality diamond are cheaper on average than fair diamonds (lowest qualiity) 
+Looking at the plot above, and comparing with that of the freqpoly plot earlier, with this one, I also see that better quality diamond are cheaper on average than fair diamonds (lowest qualiity) 
 `r ji("thinking")``r ji("thinking")``r ji("thinking")`  
 
 The levels used by cut has an intrinsic ordering (good, very good, fair, etc), and we can use `reorder` function to reorder the boxplot. And the cut factor already had its levels ordered in an order I like;
@@ -79,8 +80,7 @@ flights_sched <- flights %>%
          sched_dep_time = sched_hours + sched_mins / 60)
  
 ggplot(flights_sched, aes(cancelled, sched_dep_time)) +
-  geom_boxplot()
-
+  geom_boxplot() +
 ggplot(flights_sched, aes(sched_dep_time, colour = cancelled)) +
   geom_freqpoly()
 ```
@@ -107,7 +107,7 @@ From the above, I see that carat is a better price predictor.
 ```{r}
 ggplot(diamonds, aes(cut, price)) +
   geom_boxplot() +
-  coord_flip()
+  coord_flip() +
 
 ggplot(diamonds, aes(price, cut)) +
   geom_boxploth()
@@ -132,9 +132,11 @@ Basically, Letter-value plots are boxplots for large datasets, while normal boxp
 ```{r}
 ggplot(diamonds, aes(cut, price)) +
   geom_violin() 
+
 ggplot(diamonds, aes(price)) +
   geom_histogram() +
-  facet_wrap(~ cut, ncol = 1) 
+  facet_wrap(~ cut, ncol = 1, scales = "free_y") 
+
 ggplot(diamonds, aes(price, y = ..density..)) +
   geom_freqpoly(aes(color = cut)) 
 ```
@@ -183,8 +185,10 @@ ggplot(diamonds, aes(cut, color)) +
 The size of each circle shows the amount of that combination for that circle. Another approach is to compute the count combination of the categories using dplyr's `count` and then visualising the result with `geom_tile` and `fill`.  
 
 ```{r}
-diamonds %>%
-  count(cut, color) %>%
+count <- diamonds %>%
+  count(cut, color)
+
+count %>%
 ggplot(aes(color, cut)) +
   geom_tile(aes(fill = n)) +
   scale_fill_gradientn(colours=rainbow(7))
@@ -192,11 +196,22 @@ ggplot(aes(color, cut)) +
 
 If the categorical variables are unordered, we can use the `seriation` package to order the columns and rows to better reveal interesting patterns, for larger plots, we can try the `d3heatmap` or `heatmaply` (interactive) packages. 
 
-##### Exercise 7.5.2.1  
+### Exercise 7.5.2.1  
 
-1. How could you rescale the count dataset above to more clearly show the distribution of cut within colour, or colour within cut?  
+##### 1. How could you rescale the count dataset above to more clearly show the distribution of cut within colour, or colour within cut?  
 
 ```{r}
-diamonds %>%
-  count(color, cut)
+count <- count %>%
+  group_by(color) %>%
+  mutate(props = n / sum(n)) 
+
+count %>%
+  ggplot(aes(color, cut)) +
+  geom_tile(aes(fill = props), colour = "grey50") +
+  scale_fill_gradientn(colours=rainbow(7))
 ```
+
+There are several ways I can re-scale the count of the dataset, the easiest way is to use the log2 value, another way is to scale by proportion. Here I'm scaling by log value, which isn't very easy to understand compared to the rescaling by proportion.  
+
+##### 2: Use geom_tile() together with dplyr to explore how average flight delays vary by destination and month of year. What makes the plot difficult to read? How could you improve it?  
+

@@ -111,7 +111,7 @@ Note that we can use our `count` variables to compute things that are plotted he
 diamonds %>%
   count(cut)
 
-diamonds
+diamonds %>%
   count(cut_width(carat, 0.2))
 ```
 
@@ -212,11 +212,15 @@ plt <- function(df) {
     ggplot(mapping = aes(x = dimension_value, colour = dimension)) +
     geom_freqpoly(binwidth = 0.2)
 }
+diamonds
+
+(diamonds %>% 
+  gather(dimension, dimension_value, x:z))
 
 diamonds %>%
   select(x, y, z) %>%
   filter(x > 0 | y > 0) %>%
-  plt(.) 
+  plt() 
 ```
 
 There seems to be outliers here, first, I notice my initial observation, that the bigger the dimension, the rarer, that means those ones that are big here, indicated by the flat line in the plot needs further checking. Another thing I notice is that I can't seem to find the line for x, the red line, it's completely masked by the y variable, suggestion that the x and y are usually almost the same, this seems to suggest to me that the points are usually the same for the x and y variables, except on few occassions. If that is the case, why are there data points of y greater than x, like I see that the maximum x variable is 10.74 and y is 58.9, if majority of the data sets seems to suggest that x is always the same of close to y, then y the difference? Are those ones better diamond? More expensive, or what? Also, does dimension determine price?
@@ -241,6 +245,7 @@ diamonds_no_outliers %>%
   ggplot(mapping = aes(x = dimension_values, y = price, colour = dimen_categories)) +
   geom_jitter() +
   ggtitle("Without outliers") +
+  scale_x_discrete(limits = seq(0, 12, 2.5)) +
 plot_layout(nrow = 2)
 ```
 
