@@ -1,0 +1,50 @@
+---
+title: "Patterns and Models"
+author: "Chidi Justice"
+date: "7/16/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE, warning=FALSE, echo=FALSE, message=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  comment = "#>",
+  collapse = TRUE,
+  cache = TRUE)
+```
+
+
+```{r warning = FALSE, echo = TRUE, message = FALSE}
+library(tidyverse)
+library(modelr)
+library(patchwork)
+```
+
+### Patterns and Models  
+Patterns provides clues about relationships in our data. If you notice patterns in your data, some questions to ask ourselves is if the pattern is just by random (coincidence), or how we can describe the relationship shown by the pattern, or how strong the relationship we noticed in the pattern, what variables might affect this pattern or be affected by it, etc.   
+```{r}
+ggplot(faithful, aes(eruptions, waiting)) +
+  geom_point()
+```
+
+The above scatterplot shows two clusters showing that small eruption times have small waiting time and big eruption times have bigger waiting times. Patterns are signs that there's covariation in our dataset. If variables covary, we can use one of those variables to make better predictions about the other and it can also cover for the others with which it varies during prediction. If the covariation is as a just a casual relationship, then we can use the value of one variable to control that of the other one.  Due to possible covariation between variables in a dataset, modeling is a good tool for extracting patterns out of data.
+```{r}
+mod <- lm(log(price) ~ log(carat), data = diamonds)
+attributes(mod)
+
+diamonds2 <- diamonds %>%
+  add_residuals(mod) %>%
+  mutate(resid = exp(resid))
+
+ggplot(diamonds2) +
+  geom_point(aes(carat, resid))
+```
+
+Above, after I model the linear model relationship between price and carat, I compute the residuals (the difference between the predicted values and the actual values), then I add this residuals to the predicted values and plot this with the carat variable, here I see the un-influenced relationship beetween price and carat and see that carat actually predicts the price, the higher the carat the higher the price. Same thing with cut too, that better cut diamonds are more expensive as seen below.  
+```{r}
+ggplot(diamonds2, aes(cut, resid)) +
+  geom_boxplot()
+```
+
+So what the above illustrates is that when we model properly, we'll be able to clearly see patterns as there aren't unnecessary side effects of covariation when checking relationships or predicting or analysing our data. A good rule of thumb might be model when you notice patterns to actually see the patterns relationship or causes properly.
+
