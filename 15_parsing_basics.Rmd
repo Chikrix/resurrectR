@@ -1,0 +1,36 @@
+---
+title: "Parsing basics"
+author: "Chidi Justice"
+date: "7/16/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE, warning=FALSE, echo=FALSE, message=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  comment = "#>",
+  collapse = TRUE,
+  cache = TRUE)
+```
+
+```{r warning = FALSE, echo = TRUE, message = FALSE}
+library(tidyverse)
+```
+
+### Delimited files  
+Delimited files are files with a delimiter between values. Examples of delimited files includes .csv and .tsv files. Csv files are comma separated, and tsv files are tab separated.  If you're reading a file using a package like `readr` and you're getting weird errors, its good to read a few lines off the file using a function like `readr::read_lines()` and `write_lines`, specifying the max number of lines to be read. For example   
+
+```
+"heights.csv" %>% 
+  read_lines(n_max = 10) %>%
+  writeLines()
+#> "earn","height","sex","ed","age","race"
+#> 50000,74.4244387818035,"male",16,45,"white"
+#> 60000,65.5375428255647,"female",16,58,"white"
+#> 30000,63.6291977374349,"female",16,29,"white"
+#> 50000,63.1085616752971,"female",16,91,"other"
+#> 51000,63.4024835710879,"female",17,39,"white"
+#> 9000,64.3995075440034,"female",15,26,"white"
+```
+
+We can use `readr`'s `read_csv()` function to read csv files and it'll return a tibble. Some important and commonly used arguments for this function are `col_names`. This parameter can be boolean or a vector. If its a boolean, it denotes that the first line is the column names to be used or not, if its a vector, it specifies the column names. `col_types` specifies the data type of each column in the order specified. We can use `skip` to specify the number of lines to skip before starting to read, or `comment = "#"` to ignore lines starting with "#".  Missing values are denoted as `NA` but we can set what we want for it using `na = .` for example to set missing values equal to `.`  .
